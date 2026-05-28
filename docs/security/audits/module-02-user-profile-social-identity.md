@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented for local/backend/frontend scope. Production CloudFront delivery and deployed S3 verification remain planned.
+Implemented for local/backend/frontend scope. Local profile media uses MinIO as S3-compatible storage. AWS S3 remains the production target. Production CloudFront delivery and deployed AWS S3 verification remain planned.
 
 ## Implemented Controls
 
@@ -13,7 +13,9 @@ Implemented for local/backend/frontend scope. Production CloudFront delivery and
   - `Private`: owner-only.
   - `FriendsOnly`: stored but owner-only until Module 3.
 - Safe public DTOs: no email, password hash, OAuth IDs, tokens, auth state, or private account fields.
-- Private S3 bucket presigned upload flow.
+- Private S3-compatible bucket presigned upload flow.
+- Local MinIO API `http://localhost:9000`, console `http://localhost:9001`, bucket `simple-profile-assets-dev`.
+- AWS S3 production path preserved by changing only storage configuration.
 - Backend-generated object keys only.
 - Confirm step checks object ownership prefix and object existence.
 - JPEG, PNG, and WebP only.
@@ -21,14 +23,34 @@ Implemented for local/backend/frontend scope. Production CloudFront delivery and
 - Avatar 5 MB max; banner 10 MB max.
 - Avatar/banner removal clears stored object keys and requests storage deletion.
 
-## Required AWS Config
+## Required Local MinIO Config
 
 ```text
-AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=REPLACE_WITH_PRIVATE_PROFILE_MEDIA_BUCKET
-AWS_S3_PROFILE_PREFIX=profile-assets
-AWS_S3_UPLOAD_URL_EXPIRY_MINUTES=10
-AWS_S3_READ_URL_EXPIRY_MINUTES=15
+Storage__Provider=S3Compatible
+Storage__BucketName=simple-profile-assets-dev
+Storage__Region=us-east-1
+Storage__ServiceUrl=http://localhost:9000
+Storage__AccessKey=simpleadmin
+Storage__SecretKey=simpleadmin123
+Storage__ProfilePrefix=profile-assets
+Storage__ForcePathStyle=true
+Storage__UploadUrlExpiryMinutes=5
+Storage__ReadUrlExpiryMinutes=30
+```
+
+## Future AWS Production Config
+
+```text
+Storage__Provider=AWS
+Storage__BucketName=simpleplatform-profile-assets-prod
+Storage__Region=<real-aws-region>
+Storage__ServiceUrl=
+Storage__AccessKey=<configured-in-host-secrets-or-empty-if-using-role>
+Storage__SecretKey=<configured-in-host-secrets-or-empty-if-using-role>
+Storage__ProfilePrefix=profile-assets
+Storage__ForcePathStyle=false
+Storage__UploadUrlExpiryMinutes=5
+Storage__ReadUrlExpiryMinutes=30
 ```
 
 ## Remaining Risks

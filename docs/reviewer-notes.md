@@ -13,7 +13,7 @@ stats and achievements. Think Steam meets a browser-based board game hub.
 The backend is ASP.NET Core 8 (C#) in a Clean Architecture structure. The frontend is
 Next.js 14 with the App Router. The database is PostgreSQL via EF Core.
 
-Right now, Module 1 and Module 2 are implemented for local/backend/frontend scope. Later modules still have visible placeholder UI in places and are not wired yet.
+Right now, Module 1 and Module 2 are implemented for local/backend/frontend scope. Module 2 profile media uses local MinIO for development through S3-compatible storage configuration while preserving AWS S3 as the production target. Later modules still have visible placeholder UI in places and are not wired yet.
 
 ---
 
@@ -89,7 +89,7 @@ automated credential stuffing and mass-registration scripts.
 
 ## What Is Not Yet Done
 
-- Modules 3-15 are not implemented. Module 2 profile media and visibility are implemented locally, but production CloudFront delivery and deployed S3 verification remain planned.
+- Modules 3-15 are not implemented. Module 2 profile media and visibility are implemented locally with MinIO support, but production CloudFront delivery and deployed AWS S3 verification remain planned.
 - No production database has been applied (PostgreSQL/Docker required).
 - No CI pipeline exists yet.
 - No security event logging (logins, password resets, bans are not written to an audit log).

@@ -1,6 +1,6 @@
 # Profile Security
 
-Profile media uses a private S3 bucket with backend-generated presigned upload and read URLs. AWS credentials are server-side only.
+Profile media uses a private S3-compatible bucket with backend-generated presigned upload and read URLs. Local development uses MinIO. AWS S3 remains the production target. Storage credentials are server-side only.
 
 ## Controls
 
@@ -12,6 +12,7 @@ Profile media uses a private S3 bucket with backend-generated presigned upload a
 - Avatar limit is 5 MB; banner limit is 10 MB.
 - Public profile DTOs exclude email, password hash, OAuth IDs, tokens, auth state, and private account fields.
 - `Private` and `FriendsOnly` profiles are hidden from non-owners in Module 2.
+- The same backend flow works for MinIO and AWS S3 through `Storage__*` configuration.
 
 ## Remaining Limitations
 

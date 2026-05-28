@@ -96,6 +96,8 @@ product data lives in `src/mock/`.
 | Backend: Public profile endpoint with visibility rules | Done |
 | Backend: Profile update (display name, bio, region, status, fallback avatar color, visibility) | Done |
 | Backend: S3 presigned upload flow for avatar and cover images | Done |
+| Backend: Local MinIO support for S3-compatible profile media storage | Done |
+| Backend: AWS S3 production path preserved through storage configuration | Done |
 | Backend: Username/handle change with uniqueness enforcement | Done |
 | Backend: External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website) | Done |
 | Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
@@ -186,8 +188,12 @@ Purpose:
 - [x] Display name, bio, region, status message, fallback avatar color, avatar/banner display URLs
 - [x] Avatar/profile picture upload, replace, remove, and fallback avatar color
 - [x] Cover/banner upload, replace, remove, and fallback banner
-- [x] S3 presigned upload flow for profile media
-- [x] Avatar and banner image upload via private AWS S3 presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
+- [x] Local MinIO support for S3-compatible profile media storage
+- [x] AWS S3 production path preserved through storage configuration
+- [x] Avatar/profile picture upload, replace, remove, and fallback behavior
+- [x] Cover/banner upload, replace, remove, and fallback behavior
+- [x] Presigned upload flow for profile media
+- [x] Avatar and banner image upload via private S3-compatible presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
 - [x] Username/handle display; username change requires admin approval (request stored)
 - [x] Profile visibility: public, friends-only (owner-only until Module 3), private
 - [x] External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website)
