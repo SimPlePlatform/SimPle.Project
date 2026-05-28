@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Local notes and session files
+*.tmp
+*.bak
+*.swp
+docs/handoffs/
