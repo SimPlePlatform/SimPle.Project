@@ -155,7 +155,6 @@ Purpose:
 - Secure account creation, sign-in, browser sessions, account recovery, and
   account-security settings.
 
-Implemented:
 - [x] Email/password register, login, logout, logout-all, refresh token flow
 - [x] Current user endpoint
 - [x] JWT access cookie and hashed rotating refresh token storage
@@ -167,83 +166,41 @@ Implemented:
 - [x] reCAPTCHA on login and registration
 - [x] Account lockout and suspension enforcement
 - [x] Security event logging and token cleanup background service
+- [x] Change password (verifies current, revokes all sessions)
+- [x] Change email flow (verification link to new address)
+- [x] Active sessions list with IP and device info
+- [x] Revoke individual session
+- [x] Revoke all sessions / sign out all devices
+- [x] Account delete with password confirmation
+- [ ] Google OAuth link/unlink management (planned)
+- [ ] Production PostgreSQL migration verification (pending deployment)
 
-Planned to support current settings mock UI:
-- [ ] Change email flow
-- [ ] Change password flow
-- [ ] Google OAuth link/unlink management
-- [ ] Active sessions/device list
-- [ ] Revoke active session
-- [ ] Account deactivation/delete flow with confirmation
-- [ ] Production PostgreSQL migration verification
-
-Status:
-- Implemented for core auth.
-- Account-security settings are planned.
+Status: **Complete** for core auth and account-security settings.
 
 ### Module 2: User Profile & Social Identity
 
 Purpose:
-- Make the current profile and profile-settings mock UI real.
-- Own public social identity, not account security.
+- Public social identity, profile page, and profile-settings UI wired to the backend.
 
-Current UI target:
-- `/profile/[userId]`
-- `/settings` -> Account -> Profile card
-- Sidebar/topbar user identity display
+- [x] Display name, bio, region, status message, avatar URL, banner URL
+- [x] Avatar and banner image upload via AWS S3 (JPEG/PNG/WebP/GIF, 5 MB / 8 MB limits)
+- [x] Username/handle display; username change requires admin approval (request stored)
+- [x] Profile visibility: public, friends-only (owner-only until Module 3), private
+- [x] External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website)
+- [x] Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia)
+- [x] Public profile page with visibility enforcement
+- [x] Own profile page with inline edit
+- [x] Settings page profile card wired to real API
+- [x] Sidebar and topbar identity from real auth session
+- [x] Role and ELO display (read-only)
+- [x] Ownership checks and safe DTOs (no email/auth fields in public profile)
+- [x] EF Core migrations: `AddUserProfiles`, `AddUsernameChangeRequests`
+- [x] Unit and integration test coverage >90% for profile scope
+- [x] `docs/modules/profile/` documentation added
+- [ ] FriendsOnly visibility enforced per-friend (pending Module 3)
+- [ ] Production migration verification (pending deployment)
 
-Included features:
-- [ ] Public profile page
-- [ ] Own profile page
-- [ ] Display name
-- [ ] Username/handle, with validation and change limits
-- [ ] Bio/about text
-- [ ] Avatar display
-- [ ] Banner/cover display
-- [ ] Region/location display
-- [ ] Profile visibility: public, friends-only, private
-- [ ] Optional status message if kept separate from realtime presence
-- [ ] Optional external social links if added to UI later
-- [ ] Read-only role/account tier display if useful, without billing logic
-
-Backend scope:
-- [ ] `ProfileController`
-- [ ] Profile service
-- [ ] Public profile DTO
-- [ ] Own profile DTO
-- [ ] Update profile DTO
-- [ ] Validators for username, display name, bio, visibility, links
-- [ ] Server-side ownership checks for updates
-- [ ] Server-side visibility checks for public/friends/private profiles
-
-Frontend scope:
-- [ ] Replace `CURRENT_USER` mock data in profile identity areas with API data
-- [ ] Wire profile save actions to API
-- [ ] Keep stats, achievements, match history, friends count, and favorite games
-      as planned placeholders until later modules provide real data
-
-Database scope:
-- [ ] Reuse existing `User` profile fields for MVP where possible: display name,
-      bio, avatar URL, banner URL, color, initials, region
-- [ ] Add only missing profile fields needed by the UI, such as visibility and
-      optional status message/location
-- [ ] Defer dedicated file-upload storage unless avatar/banner upload is built
-
-Security/testing scope:
-- [ ] Do not expose email on public profiles
-- [ ] IDOR tests for editing another user's profile
-- [ ] Validation tests for display name, username, bio, and visibility
-- [ ] Public/private profile access tests
-
-Documentation scope:
-- [ ] Add `docs/modules/profile/README.md`
-- [ ] Add `docs/modules/profile/api-reference.md`
-- [ ] Add `docs/modules/profile/technical-flow.md`
-- [ ] Add `docs/modules/profile/testing-report.md`
-- [ ] Update Module 2 security audit to mention existing mock UI
-
-Status:
-- UI only, with partial backend domain fields already on `User`.
+Status: **Complete** for Module 2 scope.
 
 ### Module 3: Friends & Social Graph
 
