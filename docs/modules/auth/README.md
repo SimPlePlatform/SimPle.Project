@@ -45,6 +45,25 @@ making this request?"
 - GitHub Actions CI pipeline: backend (build/test/vuln-scan) and frontend
   (tsc/lint/build/test/audit) jobs on every push to `main` and `feature/**`.
 
+### Account Security Settings (module-01-auth-finalization)
+
+- **Change password** — `POST /api/auth/change-password`. Verifies current password,
+  hashes and stores the new one, revokes all active sessions, clears auth cookies.
+  Google-only accounts return a safe error directing the user to reset instead.
+- **Change email** — `POST /api/auth/change-email`. Sends a verification link to the
+  new address using the existing email-verification token flow. The current email
+  stays active until the link is confirmed. Checks for duplicate emails before
+  sending.
+- **Active sessions list** — `GET /api/auth/sessions`. Returns active refresh tokens
+  with IP address, user agent, and an `isCurrent` flag that marks the session whose
+  refresh token is present in the current request's cookie.
+- **Revoke session** — `DELETE /api/auth/sessions/{id}`. Lets the authenticated user
+  revoke any of their own sessions by token ID. Prevents revoking another user's
+  sessions.
+- **Delete account** — `DELETE /api/auth/account`. Verifies password (skipped for
+  Google-only accounts), revokes all sessions, deletes the user record, and clears
+  auth cookies. Frontend prompts for password confirmation before the request.
+
 ## API Endpoints
 
 | Endpoint | Purpose |
@@ -56,11 +75,16 @@ making this request?"
 | `POST /api/auth/refresh` | Rotate refresh token, issue new cookies |
 | `POST /api/auth/logout` | Revoke current session |
 | `POST /api/auth/logout-all` | Revoke all sessions for this user |
-| `POST /api/auth/verify-email` | Consume single-use email verification token |
+| `POST /api/auth/verify-email` | Consume single-use email verification token (also handles email-change confirmation when `PendingEmail` is set) |
 | `POST /api/auth/resend-verification` | Issue a new email verification message |
 | `POST /api/auth/forgot-password` | Request password reset link |
 | `POST /api/auth/reset-password` | Consume reset token and update password |
 | `POST /api/auth/google` | Sign in or register with a Google ID token |
+| `POST /api/auth/change-password` | Change password (requires current password; revokes sessions) |
+| `POST /api/auth/change-email` | Request email change via verification link |
+| `GET /api/auth/sessions` | List active sessions for the authenticated user |
+| `DELETE /api/auth/sessions/{id}` | Revoke a specific session |
+| `DELETE /api/auth/account` | Permanently delete account (requires password confirmation) |
 
 ## Security Shape
 
