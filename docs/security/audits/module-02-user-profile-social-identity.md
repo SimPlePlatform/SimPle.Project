@@ -1,4 +1,4 @@
-# Module 2: User Profile & Social Identity Security Audit
+﻿# Module 2: User Profile & Social Identity Security Audit
 
 ## Status
 
@@ -16,7 +16,7 @@ Implemented for local/backend/frontend scope. Local profile media uses MinIO as 
 - Owner-only external link editing.
 - External link allowlist: GitHub, X/Twitter, Instagram, Discord, website.
 - External link validation requires absolute HTTPS URLs and rejects `http`, `javascript:`, `data:`, `file:`, invalid URLs, duplicates, and unsupported platforms.
-- `Gamer`/`Developer` profile type stored and exposed only in visible profile DTOs.
+- `Player`/`Developer` profile type stored and exposed only in visible profile DTOs.
 - `Developer` does not grant admin, billing, subscription, or publishing permissions.
 - Private S3-compatible bucket presigned upload flow.
 - Local MinIO API `http://localhost:9000`, console `http://localhost:9001`, bucket `simple-profile-assets-dev`.
@@ -27,6 +27,8 @@ Implemented for local/backend/frontend scope. Local profile media uses MinIO as 
 - SVG rejected.
 - Avatar 5 MB max; banner 10 MB max.
 - Avatar/banner removal clears stored object keys and requests storage deletion.
+- Fallback avatar and banner colors are validated hex values.
+- Username change policy is enforced server-side: 1 immediate change and 1 admin-review request per UTC calendar month; editing updates a pending request and canceling does not restore allowance.
 
 ## Required Local MinIO Config
 

@@ -1,4 +1,4 @@
-# SimPle — Reviewer Notes
+﻿# SimPle â€” Reviewer Notes
 
 *For the developer's own use. Explains the project, key decisions, and likely interview questions.*
 
@@ -21,13 +21,13 @@ Right now, Module 1 and Module 2 are implemented for local/backend/frontend scop
 
 The backend is split into four projects:
 
-- **SimPle.Domain** — pure business entities (`User`, `RefreshToken`, etc.) with no
+- **SimPle.Domain** â€” pure business entities (`User`, `RefreshToken`, etc.) with no
   framework dependencies.
-- **SimPle.Application** — use-case services (`AuthService`), DTOs, FluentValidation
+- **SimPle.Application** â€” use-case services (`AuthService`), DTOs, FluentValidation
   validators, and interfaces that the infrastructure must implement.
-- **SimPle.Infrastructure** — EF Core repositories, Argon2 password hasher, JWT token
+- **SimPle.Infrastructure** â€” EF Core repositories, Argon2 password hasher, JWT token
   service, Google OAuth validator, reCAPTCHA verifier, and SMTP email sender.
-- **SimPle.Api** — ASP.NET controllers, middleware, OpenAPI/Swagger config, and the DI
+- **SimPle.Api** â€” ASP.NET controllers, middleware, OpenAPI/Swagger config, and the DI
   wiring in `Program.cs`.
 
 The rule is: outer layers depend on inner layers. The domain knows nothing about
@@ -36,13 +36,13 @@ without spinning up a server.
 
 ---
 
-## How Auth Works — The Short Version
+## How Auth Works â€” The Short Version
 
 1. The user submits email + password + reCAPTCHA token.
 2. The server verifies the reCAPTCHA with Google, checks the password against an Argon2id
    hash, and issues two HttpOnly cookies:
-   - **access cookie** — 15-minute HS256 JWT, used on every API call.
-   - **refresh cookie** — 7-day rotating token, stored hashed in the database.
+   - **access cookie** â€” 15-minute HS256 JWT, used on every API call.
+   - **refresh cookie** â€” 7-day rotating token, stored hashed in the database.
 3. When the access token expires, the browser hits `/api/auth/refresh`. The server checks
    the refresh token, issues a new pair, and revokes the old one.
 4. If someone replays a used refresh token (possible if it was stolen), the server detects
@@ -69,12 +69,12 @@ at all. This is the primary XSS token-theft mitigation.
 Rotating refresh tokens are susceptible to a race condition: if an attacker steals a
 refresh token before it is rotated, they can use the original while the legitimate user
 uses the rotated one. By tracking tokens in "families", any use of a token that is
-already rotated immediately revokes the whole family — ending the attacker's session.
+already rotated immediately revokes the whole family â€” ending the attacker's session.
 
 ### SHA-256 for refresh token storage
 The raw refresh token (32 random bytes) only ever lives in the browser cookie. The
 database stores a SHA-256 hash. If the database is breached, the attacker gets hashes
-of random values — they cannot reverse them to valid tokens.
+of random values â€” they cannot reverse them to valid tokens.
 
 ### CSRF header requirement
 Even with `SameSite=Lax` cookies, requiring the `X-Requested-With: XMLHttpRequest`
@@ -89,7 +89,7 @@ automated credential stuffing and mass-registration scripts.
 
 ## What Is Not Yet Done
 
-- Modules 3-15 are not implemented. Module 2 profile media, visibility, external web profiles, and Gamer/Developer profile type are implemented locally with MinIO support, but production CloudFront delivery and deployed AWS S3 verification remain planned.
+- Modules 3-15 are not implemented. Module 2 profile media, visibility, external web profiles, Player/Developer profile type, and monthly username-change policy are implemented locally with MinIO support, but production CloudFront delivery and deployed AWS S3 verification remain planned.
 - No production database has been applied (PostgreSQL/Docker required).
 - No CI pipeline exists yet.
 - No security event logging (logins, password resets, bans are not written to an audit log).
@@ -104,7 +104,7 @@ automated credential stuffing and mass-registration scripts.
 **Q: Why Clean Architecture? Isn't it overkill for a hobby project?**
 
 A: The main benefit here is testability. The `AuthService` tests run in under a second
-with no database, no HTTP server, and no third-party calls — they just mock the
+with no database, no HTTP server, and no third-party calls â€” they just mock the
 interfaces. For a project where security is important, being able to test every auth path
 in isolation is worth the extra project structure.
 
@@ -119,7 +119,7 @@ in the database with a 1-hour expiry, and emails the user a link containing the 
 The user clicks the link, the frontend sends the token and the new password to
 `/api/auth/reset-password`. The server hashes the received token, finds the matching
 database row, verifies it has not expired and has not been used, sets the new password,
-marks the token as used, and revokes all existing refresh tokens — so every other active
+marks the token as used, and revokes all existing refresh tokens â€” so every other active
 session is logged out.
 
 ---
@@ -129,7 +129,7 @@ session is logged out.
 A: Each token belongs to a family. When a refresh token is used, the server creates a
 new token in the same family and marks the old one as used. If the server sees a token
 that is already marked as used (i.e. someone is replaying a rotated token), it revokes
-every token in that family — this ends both the attacker's session and the legitimate
+every token in that family â€” this ends both the attacker's session and the legitimate
 user's session. The user has to log in again, but the attacker cannot continue.
 
 ---
@@ -179,7 +179,7 @@ limits the window in which the refresh token can be intercepted.
 
 A: After a configurable number of failed login attempts (default 5), the user's account
 is locked for a configurable duration (default 15 minutes). The lockout state is stored
-in the `User` row — no external cache is required. The check happens before the password
+in the `User` row â€” no external cache is required. The check happens before the password
 is verified, so a locked user cannot consume Argon2 CPU time even if they supply the
 correct password.
 
@@ -188,7 +188,7 @@ correct password.
 **Q: How is Google OAuth implemented?**
 
 A: The browser uses Google Identity Services to obtain an ID token (a JWT signed by
-Google). The user never sees a client secret — that only lives on the server. The
+Google). The user never sees a client secret â€” that only lives on the server. The
 frontend sends the ID token to `/api/auth/google`. The server fetches Google's public
 JWKS, validates the token signature, checks the `aud` claim matches the configured
 Google Client ID, and checks `email_verified` is true. If all checks pass, the server
@@ -218,7 +218,7 @@ Combined with the `X-Requested-With` header requirement, CSRF is still blocked.
 | [backend/src/SimPle.Domain/Users/User.cs](../backend/src/SimPle.Domain/Users/User.cs) | User domain entity |
 | [backend/src/SimPle.Api/Program.cs](../backend/src/SimPle.Api/Program.cs) | Application configuration and DI wiring |
 | [backend/src/SimPle.Api/Controllers/ProfileController.cs](../backend/src/SimPle.Api/Controllers/ProfileController.cs) | Module 2 profile, visibility, media, and external link endpoints |
-| [backend/src/SimPle.Application/Profiles/Services/ProfileService.cs](../backend/src/SimPle.Application/Profiles/Services/ProfileService.cs) | Profile business logic, profile type, external links, and S3 object-key handling |
+| [backend/src/SimPle.Application/Profiles/Services/ProfileService.cs](../backend/src/SimPle.Application/Profiles/Services/ProfileService.cs) | Profile business logic, profile type, external links, username policy, and S3 object-key handling |
 | [backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs](../backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs) | 41 unit tests for the auth service |
 | [backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs](../backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs) | 43 integration tests for the HTTP endpoints |
 | [docs/security/audits/module-01-authentication-user-management.md](security/audits/module-01-authentication-user-management.md) | Full security audit of Module 1 |

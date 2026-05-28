@@ -1,4 +1,4 @@
-# Profile Security
+﻿# Profile Security
 
 Profile media uses a private S3-compatible bucket with backend-generated presigned upload and read URLs. Local development uses MinIO. AWS S3 remains the production target. Storage credentials are server-side only.
 
@@ -16,7 +16,9 @@ Profile media uses a private S3-compatible bucket with backend-generated presign
 - External web profile links are owner-editable only and are returned publicly only when profile visibility allows access.
 - External link platforms are limited to GitHub, X/Twitter, Instagram, Discord, and website.
 - External link URLs must be absolute HTTPS URLs; dangerous schemes and duplicates are rejected.
-- `Gamer` is the default profile type. `Developer` is display-only social identity and does not grant admin, billing, subscription, or publishing permissions.
+- `Player` is the default profile type. `Developer` is display-only social identity and does not grant admin, billing, subscription, or publishing permissions.
+- Username changes are server-enforced by UTC calendar month: 1 immediate change and 1 admin-review request. Canceling a pending request does not restore the request allowance.
+- Avatar and banner fallback colors are validated hex colors; uploaded media removal returns to those fallbacks.
 
 ## Remaining Limitations
 
