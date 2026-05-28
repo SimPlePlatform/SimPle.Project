@@ -13,8 +13,7 @@ stats and achievements. Think Steam meets a browser-based board game hub.
 The backend is ASP.NET Core 8 (C#) in a Clean Architecture structure. The frontend is
 Next.js 14 with the App Router. The database is PostgreSQL via EF Core.
 
-Right now, only Module 1 (authentication and user management) is implemented. All other
-modules are planned but not started.
+Right now, Module 1 and Module 2 are implemented for local/backend/frontend scope. Later modules still have visible placeholder UI in places and are not wired yet.
 
 ---
 
@@ -90,7 +89,7 @@ automated credential stuffing and mass-registration scripts.
 
 ## What Is Not Yet Done
 
-- Modules 2–15 are not implemented. Only the auth module is complete.
+- Modules 3-15 are not implemented. Module 2 profile media and visibility are implemented locally, but production CloudFront delivery and deployed S3 verification remain planned.
 - No production database has been applied (PostgreSQL/Docker required).
 - No CI pipeline exists yet.
 - No security event logging (logins, password resets, bans are not written to an audit log).
@@ -218,6 +217,8 @@ Combined with the `X-Requested-With` header requirement, CSRF is still blocked.
 | [backend/src/SimPle.Infrastructure/Auth/JwtTokenService.cs](../backend/src/SimPle.Infrastructure/Auth/JwtTokenService.cs) | JWT and refresh token logic |
 | [backend/src/SimPle.Domain/Users/User.cs](../backend/src/SimPle.Domain/Users/User.cs) | User domain entity |
 | [backend/src/SimPle.Api/Program.cs](../backend/src/SimPle.Api/Program.cs) | Application configuration and DI wiring |
+| [backend/src/SimPle.Api/Controllers/ProfileController.cs](../backend/src/SimPle.Api/Controllers/ProfileController.cs) | Module 2 profile, visibility, and media endpoints |
+| [backend/src/SimPle.Application/Profiles/Services/ProfileService.cs](../backend/src/SimPle.Application/Profiles/Services/ProfileService.cs) | Profile business logic and S3 object-key handling |
 | [backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs](../backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs) | 41 unit tests for the auth service |
 | [backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs](../backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs) | 43 integration tests for the HTTP endpoints |
 | [docs/security/audits/module-01-authentication-user-management.md](security/audits/module-01-authentication-user-management.md) | Full security audit of Module 1 |
