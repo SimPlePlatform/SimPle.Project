@@ -186,6 +186,24 @@ All 14 findings fixed. See the full fix list in
 
 ---
 
+## Additions Since Initial Audit (Module 2 scope)
+
+The following session management features were implemented and audited during the Module 2 profile audit, because the settings page exposes session security controls.
+
+**Session list and revoke endpoints added:**
+- `GET /api/auth/sessions` — lists active sessions with safe DTO (id, IP, UA, created, expires, isCurrent). No raw token values exposed.
+- `DELETE /api/auth/sessions/{sessionId}` — revokes a specific session by ID. Rejects sessions belonging to other users with 404.
+- `POST /api/auth/logout-all` — revokes all active refresh tokens for the authenticated user.
+
+**Immediate access token invalidation via session sid claim:**
+- Added `IRevokedJtiStore` (MemoryCache, 20-minute TTL) and `MemoryCacheRevokedJtiStore`.
+- `GenerateAccessToken` now includes the session `FamilyId` as a `sid` (session ID) claim in every JWT. The `FamilyId` is stable across token rotation within a login session.
+- When a session is revoked or all sessions are signed out, the `FamilyId` values are added to the in-memory blocklist.
+- `OnTokenValidated` in the JWT middleware checks the `sid` claim against the blocklist. A token with a revoked `sid` receives a 401 immediately — it does not need to wait for the 15-minute access token lifetime to expire.
+- No database migration required. On server restart the blocklist resets; access tokens expire in 15 minutes, bounding the window.
+
+---
+
 ## Remaining Risks
 
 | Risk | Severity | Notes |
@@ -195,6 +213,7 @@ All 14 findings fixed. See the full fix list in
 | No security event logging | Medium | Auth events not in audit log |
 | Token table purge job missing | Medium | Expired rows accumulate |
 | Proxy-aware IP limiting | Low | Needs `UseForwardedHeaders` in production |
+| Session revocation blocklist clears on server restart | Info | In-memory store. Window bounded by 15-minute access token TTL. |
 
 ---
 

@@ -222,3 +222,23 @@ Combined with the `X-Requested-With` header requirement, CSRF is still blocked.
 | [backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs](../backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs) | 41 unit tests for the auth service |
 | [backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs](../backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs) | 43 integration tests for the HTTP endpoints |
 | [docs/security/audits/module-01-authentication-user-management.md](security/audits/module-01-authentication-user-management.md) | Full security audit of Module 1 |
+| [backend/src/SimPle.Application/Profiles/DTOs/UpdateProfileRequestDto.cs](../backend/src/SimPle.Application/Profiles/DTOs/UpdateProfileRequestDto.cs) | Profile update DTO — note the intentional absence of AvatarUrl/BannerUrl |
+| [backend/src/SimPle.Domain/Profiles/ProfileExternalLink.cs](../backend/src/SimPle.Domain/Profiles/ProfileExternalLink.cs) | Per-platform social link URL normalization and domain validation |
+| [backend/src/SimPle.Infrastructure/Auth/MemoryCacheRevokedJtiStore.cs](../backend/src/SimPle.Infrastructure/Auth/MemoryCacheRevokedJtiStore.cs) | In-memory session revocation blocklist |
+| [docs/security/audits/module-02-user-profile-social-identity.md](security/audits/module-02-user-profile-social-identity.md) | Full security audit of Module 2 |
+
+---
+
+## Module 2 — Profile and Social Identity Q&A
+
+**Q: Why was AvatarUrl removed from the profile update endpoint?**
+
+A: The profile update endpoint (`PUT /api/profile/me`) is for updating metadata like display name, bio, and visibility settings. Before the fix, it also accepted `AvatarUrl` and `BannerUrl` as free-text HTTPS URLs. This let users set their avatar to any external URL, which bypasses the presigned upload flow's content-type validation, size limit, and object key ownership checks. It also created a risk of tracking pixels: a user could set their avatar to a URL they control and observe who views their profile. The fix was to remove these fields from the DTO entirely. Media is now exclusively managed through the dedicated upload/confirm/remove endpoints.
+
+**Q: How does the per-platform social link normalization work?**
+
+A: `ProfileExternalLink.NormalizeUrlForPlatform()` accepts either a bare handle (e.g. `testuser`) or a full profile URL (e.g. `https://github.com/testuser`). For handles, it prepends the canonical base URL. For URLs, it validates the host against an allowed-host list for the platform — so `https://github.com/user` is accepted for the GitHub platform but `https://evil.com/user` is rejected. It then extracts the path segment as the handle and reconstructs the canonical URL. The `twitter.com` domain is accepted for the `xtwitter` platform and normalized to `x.com`. Discord accepts either a username (stored as `discord://{username}`) or a `discord.gg` / `discord.com` URL.
+
+**Q: How does the session revocation work with JWTs?**
+
+A: JWTs are stateless — once issued, the server cannot "recall" a signed token. When a user revokes a session, the refresh token is marked revoked in the database (existing behavior). The new behavior is that the session's `FamilyId` (a GUID that is stable across token rotations) is added to an in-memory blocklist with a 20-minute TTL. Every access token now carries the `FamilyId` as a `sid` claim. The JWT middleware's `OnTokenValidated` event checks the `sid` against the blocklist. If it is present, the request gets a 401 immediately. After 20 minutes (well past the 15-minute access token lifetime), the blocklist entry expires automatically. This gives effective immediate revocation without requiring a database roundtrip on every authenticated request.
