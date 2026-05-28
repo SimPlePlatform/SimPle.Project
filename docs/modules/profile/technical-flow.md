@@ -17,6 +17,14 @@
 
 Avatar and banner removal clear the stored object key and request object deletion from storage. The UI then returns to fallback avatar initials/color or default banner styling.
 
+## Social Identity
+
+External web profiles are edited only through authenticated owner endpoints. The backend validates the supported platform set, requires absolute HTTPS URLs, rejects dangerous schemes, enforces the max link count, and prevents duplicate platform+URL entries before replacing the stored list.
+
+Profile visibility is checked before returning a public profile. `Public` profiles are visible to everyone; `Private` profiles are owner-only; `FriendsOnly` is stored but behaves owner-only until Module 3 provides the friend graph.
+
+Profile type is stored on the user profile as `Gamer` or `Developer`. `Gamer` is the default. `Developer` is display-only Module 2 social identity and does not grant admin, billing, subscription, or game publishing permissions.
+
 ## Storage Rules
 
 - Bucket is private.

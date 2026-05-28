@@ -7,7 +7,7 @@ All state-changing endpoints require `X-Requested-With: XMLHttpRequest`. Authent
 ## Profile
 
 - `GET /me` returns the authenticated user's profile.
-- `PUT /me` updates display name, bio, region, status message, visibility, and legacy URL fields.
+- `PUT /me` updates display name, bio, region, status message, visibility, profile type, and legacy URL fields.
 - `GET /{username}` returns a public profile when visibility allows it.
 - `PUT /me/username` changes the username when available.
 - `POST /me/username-change-request` stores a username-change request for review.
@@ -15,7 +15,30 @@ All state-changing endpoints require `X-Requested-With: XMLHttpRequest`. Authent
 - `GET /me/links` and `PUT /me/links` read/replace external links.
 - `GET /me/interests` and `PUT /me/interests` read/replace interest tags.
 
-Profile responses include `avatarUrl`, `bannerUrl`, `hasUploadedAvatar`, `hasUploadedBanner`, `color`, `initials`, and `visibility`. They do not include email, password hash, OAuth data, tokens, or private auth/security fields.
+Profile responses include `avatarUrl`, `bannerUrl`, `hasUploadedAvatar`, `hasUploadedBanner`, `color`, `initials`, `visibility`, `profileType`, and allowed external links. They do not include email, password hash, OAuth data, tokens, or private auth/security fields.
+
+`profileType` is `Gamer` by default or `Developer` for game publisher/developer social identity. `Developer` does not grant admin, billing, subscription, or publishing permissions in Module 2.
+
+## External Links
+
+`GET /me/links` returns the owner-editable web profile links.
+
+`PUT /me/links` replaces the authenticated user's links:
+
+```json
+{
+  "links": [
+    {
+      "platform": "github",
+      "url": "https://github.com/simple",
+      "displayLabel": "Code",
+      "sortOrder": 0
+    }
+  ]
+}
+```
+
+Supported platforms are `github`, `xtwitter`/`twitter`, `instagram`, `discord`, and `website`. URLs must be valid absolute HTTPS URLs. `http`, `javascript:`, `data:`, `file:`, invalid, empty, duplicate platform+URL, and unsupported platform values are rejected. Public profile responses include links only when visibility allows the requester to view the profile.
 
 ## Avatar Upload
 

@@ -19,14 +19,13 @@ npm audit
 
 ## Results So Far
 
-- Backend unit tests: 158 passed.
-- Backend integration tests: 88 passed.
-- Backend unit tests after local MinIO storage options/tests: 163 passed.
+- Backend unit tests: 170 passed.
+- Backend integration tests: 91 passed.
 - Backend coverage collection: passed.
 - Backend vulnerable package scan: no vulnerable packages found.
 - Frontend lint: passed.
 - Frontend build: passed.
-- Frontend tests: 60 passed.
+- Frontend tests: 61 passed.
 - Frontend coverage: 83.52% lines overall.
 - Frontend audit: 2 moderate advisories through `next` -> `postcss`; available fix requires `npm audit fix --force`, so it was not applied.
 
@@ -47,11 +46,16 @@ The first frontend test run was executed concurrently with `npm run build` and h
 - Avatar fallback color update.
 - Public/private/friends-only visibility behavior.
 - Public profile DTO excludes private/auth fields.
+- External social links for GitHub, X/Twitter, Instagram, Discord, and website.
+- HTTPS-only URL validation, dangerous-scheme rejection, max links, and duplicate link rejection.
+- Default `Gamer` profile type.
+- `Developer` profile type update and safe public display.
+- `Developer` does not grant admin permissions.
 
 ## Coverage
 
-- Module 2 profile/media/visibility backend scoped line coverage: 94.49% (377/399), scoped to implemented profile DTO/controller/service media and visibility paths plus S3-compatible storage adapter behavior, excluding unrelated links/interests/username-review paths.
-- Whole-backend combined line coverage: 40.04% (2352/5874).
+- Module 2 profile/social identity backend scoped line coverage: 95.73% (314/328), scoped to profile DTOs, link/profile validators, `ProfileExternalLink`, `User` profile identity fields, profile repository/configuration, and excluding generated migrations/media/storage paths.
+- Whole-backend combined raw Cobertura line coverage: 29.54% (3531/11955), including generated EF migration files.
 - Frontend line coverage: 83.52% (147/176).
 
 ## Manual Smoke Test
@@ -68,3 +72,8 @@ The first frontend test run was executed concurrently with `npm run build` and h
 - Set visibility friends-only.
 - View public profile as another user.
 - Confirm private/friends-only profile is hidden from another user.
+- Create/edit external links.
+- Confirm invalid links are rejected.
+- Switch profile type to Gamer.
+- Switch profile type to Developer.
+- Confirm Developer does not grant admin or publishing permissions.

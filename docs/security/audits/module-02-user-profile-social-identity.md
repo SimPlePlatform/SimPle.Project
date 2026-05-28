@@ -13,6 +13,11 @@ Implemented for local/backend/frontend scope. Local profile media uses MinIO as 
   - `Private`: owner-only.
   - `FriendsOnly`: stored but owner-only until Module 3.
 - Safe public DTOs: no email, password hash, OAuth IDs, tokens, auth state, or private account fields.
+- Owner-only external link editing.
+- External link allowlist: GitHub, X/Twitter, Instagram, Discord, website.
+- External link validation requires absolute HTTPS URLs and rejects `http`, `javascript:`, `data:`, `file:`, invalid URLs, duplicates, and unsupported platforms.
+- `Gamer`/`Developer` profile type stored and exposed only in visible profile DTOs.
+- `Developer` does not grant admin, billing, subscription, or publishing permissions.
 - Private S3-compatible bucket presigned upload flow.
 - Local MinIO API `http://localhost:9000`, console `http://localhost:9001`, bucket `simple-profile-assets-dev`.
 - AWS S3 production path preserved by changing only storage configuration.
@@ -58,3 +63,4 @@ Storage__ReadUrlExpiryMinutes=30
 - Production CloudFront delivery is not configured or verified.
 - Deployed S3 environment verification is pending.
 - `FriendsOnly` requires Module 3 friend graph enforcement before it can mean actual friends-only.
+- Developer publishing behavior belongs to later game publishing modules.

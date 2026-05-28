@@ -1,6 +1,6 @@
 # Module 2: User Profile & Social Identity
 
-Module 2 is implemented for local/backend/frontend scope. It provides the profile page, profile settings, avatar and cover media management, username-change requests, external links, interest tags, and profile visibility.
+Module 2 is implemented for local/backend/frontend scope. It provides the profile page, profile settings, avatar and cover media management, username-change requests, external links, interest tags, profile visibility, and profile type.
 
 Local development uses MinIO as S3-compatible storage. AWS S3 remains the production deployment target. Production CloudFront delivery and deployed AWS S3 verification remain planned.
 
@@ -21,6 +21,10 @@ Local development uses MinIO as S3-compatible storage. AWS S3 remains the produc
 - Size limits: avatar 5 MB, banner 10 MB.
 - Profile visibility: `Public`, `FriendsOnly`, `Private`.
 - `FriendsOnly` is stored now but behaves like private until Module 3 friends are implemented.
+- Web profile links for `github`, `xtwitter`/`twitter`, `instagram`, `discord`, and `website`.
+- External link URLs must be absolute HTTPS URLs. `javascript:`, `data:`, `file:`, `http:`, invalid, empty, duplicate platform+URL, and unsupported platforms are rejected.
+- Profile type: `Gamer` is the default normal gaming user; `Developer` marks a game publisher/developer social identity.
+- `Developer` does not grant admin, billing, subscription, or publishing permissions. Publishing tools belong to later game publishing modules.
 - Public profile DTOs do not expose email, password hash, OAuth IDs, tokens, auth state, or private account fields.
 
 ## Fallbacks
@@ -90,3 +94,9 @@ AWS credentials must come from the backend runtime environment, user secrets, in
 Stats, achievements, match history, friends count, favorite games, presence/activity, notifications, and similar later-module data remain placeholders.
 
 Buckets should stay private. The frontend receives only presigned URLs and never storage credentials.
+
+## Database
+
+- `users.Visibility` stores `Public`, `FriendsOnly`, or `Private`.
+- `users.ProfileType` stores `Gamer` or `Developer` through migration `AddProfileSocialIdentityFields`.
+- `profile_external_links` stores owner-scoped external links with platform, URL, optional display label, sort order, and timestamps.

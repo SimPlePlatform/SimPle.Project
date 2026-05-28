@@ -89,7 +89,7 @@ automated credential stuffing and mass-registration scripts.
 
 ## What Is Not Yet Done
 
-- Modules 3-15 are not implemented. Module 2 profile media and visibility are implemented locally with MinIO support, but production CloudFront delivery and deployed AWS S3 verification remain planned.
+- Modules 3-15 are not implemented. Module 2 profile media, visibility, external web profiles, and Gamer/Developer profile type are implemented locally with MinIO support, but production CloudFront delivery and deployed AWS S3 verification remain planned.
 - No production database has been applied (PostgreSQL/Docker required).
 - No CI pipeline exists yet.
 - No security event logging (logins, password resets, bans are not written to an audit log).
@@ -217,8 +217,8 @@ Combined with the `X-Requested-With` header requirement, CSRF is still blocked.
 | [backend/src/SimPle.Infrastructure/Auth/JwtTokenService.cs](../backend/src/SimPle.Infrastructure/Auth/JwtTokenService.cs) | JWT and refresh token logic |
 | [backend/src/SimPle.Domain/Users/User.cs](../backend/src/SimPle.Domain/Users/User.cs) | User domain entity |
 | [backend/src/SimPle.Api/Program.cs](../backend/src/SimPle.Api/Program.cs) | Application configuration and DI wiring |
-| [backend/src/SimPle.Api/Controllers/ProfileController.cs](../backend/src/SimPle.Api/Controllers/ProfileController.cs) | Module 2 profile, visibility, and media endpoints |
-| [backend/src/SimPle.Application/Profiles/Services/ProfileService.cs](../backend/src/SimPle.Application/Profiles/Services/ProfileService.cs) | Profile business logic and S3 object-key handling |
+| [backend/src/SimPle.Api/Controllers/ProfileController.cs](../backend/src/SimPle.Api/Controllers/ProfileController.cs) | Module 2 profile, visibility, media, and external link endpoints |
+| [backend/src/SimPle.Application/Profiles/Services/ProfileService.cs](../backend/src/SimPle.Application/Profiles/Services/ProfileService.cs) | Profile business logic, profile type, external links, and S3 object-key handling |
 | [backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs](../backend/tests/SimPle.UnitTests/Auth/AuthServiceTests.cs) | 41 unit tests for the auth service |
 | [backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs](../backend/tests/SimPle.IntegrationTests/Auth/AuthEndpointsTests.cs) | 43 integration tests for the HTTP endpoints |
 | [docs/security/audits/module-01-authentication-user-management.md](security/audits/module-01-authentication-user-management.md) | Full security audit of Module 1 |

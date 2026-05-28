@@ -13,6 +13,10 @@ Profile media uses a private S3-compatible bucket with backend-generated presign
 - Public profile DTOs exclude email, password hash, OAuth IDs, tokens, auth state, and private account fields.
 - `Private` and `FriendsOnly` profiles are hidden from non-owners in Module 2.
 - The same backend flow works for MinIO and AWS S3 through `Storage__*` configuration.
+- External web profile links are owner-editable only and are returned publicly only when profile visibility allows access.
+- External link platforms are limited to GitHub, X/Twitter, Instagram, Discord, and website.
+- External link URLs must be absolute HTTPS URLs; dangerous schemes and duplicates are rejected.
+- `Gamer` is the default profile type. `Developer` is display-only social identity and does not grant admin, billing, subscription, or publishing permissions.
 
 ## Remaining Limitations
 
