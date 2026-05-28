@@ -90,11 +90,12 @@ product data lives in `src/mock/`.
 
 | Area | Status |
 |---|---|
-| Backend: UserProfile fields on User entity (StatusMessage, Visibility) | Done |
+| Backend: UserProfile fields on User entity (StatusMessage, Visibility, avatar/banner object keys, fallback color) | Done |
 | Backend: Default profile exists for every registered user | Done |
 | Backend: Current-user profile endpoint | Done |
 | Backend: Public profile endpoint with visibility rules | Done |
-| Backend: Profile update (display name, bio, region, status, avatar, banner, visibility) | Done |
+| Backend: Profile update (display name, bio, region, status, fallback avatar color, visibility) | Done |
+| Backend: S3 presigned upload flow for avatar and cover images | Done |
 | Backend: Username/handle change with uniqueness enforcement | Done |
 | Backend: External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website) | Done |
 | Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
@@ -104,7 +105,7 @@ product data lives in `src/mock/`.
 | Frontend: SettingsPage profile card wired to real profile API | Done |
 | Frontend: Topbar/Sidebar identity already wired via auth session | Done |
 | Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
-| Production: Deployed migration verification | Pending deployment |
+| Production: CloudFront delivery and deployed S3 verification | Pending deployment |
 
 ### Modules 3–15: Planned
 
@@ -182,8 +183,11 @@ Status: **Complete** for core auth and account-security settings.
 Purpose:
 - Public social identity, profile page, and profile-settings UI wired to the backend.
 
-- [x] Display name, bio, region, status message, avatar URL, banner URL
-- [x] Avatar and banner image upload via AWS S3 (JPEG/PNG/WebP/GIF, 5 MB / 8 MB limits)
+- [x] Display name, bio, region, status message, fallback avatar color, avatar/banner display URLs
+- [x] Avatar/profile picture upload, replace, remove, and fallback avatar color
+- [x] Cover/banner upload, replace, remove, and fallback banner
+- [x] S3 presigned upload flow for profile media
+- [x] Avatar and banner image upload via private AWS S3 presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
 - [x] Username/handle display; username change requires admin approval (request stored)
 - [x] Profile visibility: public, friends-only (owner-only until Module 3), private
 - [x] External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website)
@@ -198,9 +202,9 @@ Purpose:
 - [x] Unit and integration test coverage >90% for profile scope
 - [x] `docs/modules/profile/` documentation added
 - [ ] FriendsOnly visibility enforced per-friend (pending Module 3)
-- [ ] Production migration verification (pending deployment)
+- [ ] Production CloudFront delivery and deployed S3 environment verification (pending deployment)
 
-Status: **Complete** for Module 2 scope.
+Status: **Complete** for local/backend/frontend Module 2 scope. Production CloudFront delivery and deployed environment verification remain planned.
 
 ### Module 3: Friends & Social Graph
 

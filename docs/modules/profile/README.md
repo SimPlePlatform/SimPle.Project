@@ -1,89 +1,54 @@
 # Module 2: User Profile & Social Identity
 
-Module 2 gives every registered user a public social identity: a profile page, a handle, a bio, avatar and banner images, a region, a custom status message, configurable visibility, external social links, and game-interest tags. It also wires the existing profile and settings UI to the real backend.
+Module 2 is implemented for local/backend/frontend scope. It provides the profile page, profile settings, avatar and cover media management, username-change requests, external links, interest tags, and profile visibility.
 
----
+Production CloudFront delivery and deployed environment verification remain planned.
 
 ## Implemented
 
-- **Current-user profile endpoint** `GET /api/profile/me` — returns the full profile DTO for the authenticated user including all fields, links, and interests.
-- **Profile update** `PUT /api/profile/me` — updates display name, bio, avatar URL, banner URL, region, status message, and visibility. Owner-only.
-- **Username/handle change** `PUT /api/profile/me/username` — changes the handle with uniqueness enforcement. Returns 409 on conflict.
-- **Public profile** `GET /api/profile/{username}` — respects visibility rules:
-  - **Public** — visible to anyone, authenticated or not.
-  - **Private** — visible to the owner only; others get 403.
-  - **FriendsOnly** — treated as owner-only until Module 3 friends are implemented.
-- **External social links** `GET/PUT /api/profile/me/links` — store links to GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, and personal websites. Up to 8 links. Replace-all update (send the full desired list).
-- **Game interest tags** `GET/PUT /api/profile/me/interests` — up to 6 tags from a fixed allowed set: `board-games`, `word-games`, `puzzle-games`, `strategy-games`, `arcade-games`, `casual-games`, `card-games`, `trivia`.
-- **Profile fields on the User entity** — `StatusMessage` and `ProfileVisibility` added to the existing `User` entity. Existing fields (DisplayName, Bio, AvatarUrl, BannerUrl, Region, Color, Initials, Level, Elo, Role) were already present and reused.
-- **EF Core migration** `AddUserProfiles` — adds `status_message` and `visibility` columns to `users`, and creates `profile_external_links` and `profile_interest_tags` tables with FK/unique constraints.
-- **Frontend: ProfilePage** wired to `GET /api/profile/me` (own profile) and `GET /api/profile/{username}` (public profile). Edit mode saves via `PUT /api/profile/me`. Stats, match history, achievements, and friends remain as placeholders pending Modules 3/10.
-- **Frontend: SettingsPage profile card** wired to real profile load and save.
-- **Frontend: Topbar and Sidebar** already used `useAuth()` which provides real name/initials/color from the auth session — no extra wiring needed.
-- Safe DTOs throughout — no email, password hash, OAuth tokens, or security fields exposed in profile responses.
+- Current user profile: `GET /api/profile/me`.
+- Public profile by username: `GET /api/profile/{username}`.
+- Profile update: `PUT /api/profile/me`.
+- Avatar/profile picture upload, replace, remove, and fallback avatar color.
+- Cover/banner upload, replace, remove, and fallback banner.
+- Private S3 bucket upload through backend-generated presigned PUT URLs.
+- Presigned read URLs in profile DTOs when uploaded media exists.
+- Server-generated object keys only: `profile-assets/users/{userId}/avatar/{uuid}.{ext}` and `profile-assets/users/{userId}/banner/{uuid}.{ext}`.
+- Allowed media types: `image/jpeg`, `image/png`, `image/webp`.
+- SVG is rejected.
+- Size limits: avatar 5 MB, banner 10 MB.
+- Profile visibility: `Public`, `FriendsOnly`, `Private`.
+- `FriendsOnly` is stored now but behaves like private until Module 3 friends are implemented.
+- Public profile DTOs do not expose email, password hash, OAuth IDs, tokens, auth state, or private account fields.
 
----
+## Fallbacks
 
-## Profile Fields
+- If no uploaded avatar exists, the UI shows the default circular avatar with initials and the stored fallback color.
+- Users can change the fallback avatar color when no uploaded avatar is present.
+- Removing an uploaded avatar clears the object key and returns to initials plus fallback color.
+- If no uploaded cover exists, the existing default banner style is shown.
+- Removing an uploaded cover clears the object key and returns to the default banner.
 
-| Field | Required | Max length | Notes |
-|---|---|---|---|
-| `username` | Yes | 30 | Letters, digits, `_`, `.`, `-` only. Unique. |
-| `displayName` | Yes | 64 | Shown everywhere as the primary name. |
-| `bio` | No | 400 | Freeform about text. |
-| `avatarUrl` | No | 512 | Must be a valid `https://` URL. |
-| `bannerUrl` | No | 512 | Must be a valid `https://` URL. |
-| `region` | No | 64 | Free text (e.g. "EU-West", "NA-East"). |
-| `statusMessage` | No | 100 | Custom text status, separate from real-time presence. |
-| `visibility` | Yes | — | `Public` \| `FriendsOnly` \| `Private`. Default: `Public`. |
-| `color` | No | — | Avatar accent color. Set at registration, not exposed for update in Module 2. |
-| `initials` | No | — | Derived from display name. |
-| `level`, `elo` | No | — | Game statistics, not updated via profile endpoints. |
-| `role` | No | — | Platform role (`Player`, `Moderator`, `Admin`). Not updatable via profile. |
+## Required AWS Configuration
 
----
+Use placeholders in committed files only. Do not put AWS credentials in the frontend.
 
-## External Links
+```text
+AWS_REGION=us-east-1
+AWS_S3_BUCKET_NAME=REPLACE_WITH_PRIVATE_PROFILE_MEDIA_BUCKET
+AWS_S3_PROFILE_PREFIX=profile-assets
+AWS_S3_UPLOAD_URL_EXPIRY_MINUTES=10
+AWS_S3_READ_URL_EXPIRY_MINUTES=15
+```
 
-Allowed platforms: `github`, `twitter`, `instagram`, `discord`, `website`, `youtube`, `twitch`, `linkedin`.
-
-Each link has: `platform`, `url` (valid absolute URL), optional `displayLabel`, `sortOrder`.
-
-Max 8 links per user. The `PUT` endpoint replaces the full list.
-
----
-
-## Interest Tags
-
-Fixed allowed set: `board-games`, `word-games`, `puzzle-games`, `strategy-games`, `arcade-games`, `casual-games`, `card-games`, `trivia`.
-
-Max 6 per user. The `PUT` endpoint replaces the full list.
-
----
+AWS credentials must come from the backend runtime environment, user secrets, instance role, or equivalent server-side credential provider.
 
 ## Visibility Rules
 
-| Visibility | Who can see |
+| Visibility | Behavior in Module 2 |
 |---|---|
-| `Public` | Everyone, including unauthenticated visitors |
-| `FriendsOnly` | Owner only (until Module 3 implements friends) |
-| `Private` | Owner only |
+| `Public` | Visible to everyone, including anonymous visitors |
+| `FriendsOnly` | Saved, but treated as owner-only until Module 3 |
+| `Private` | Visible only to the owner |
 
-Non-owner access to a non-public profile returns `403 Forbidden`.
-
----
-
-## Ownership Rules
-
-- All `PUT` and `GET me` endpoints require a valid JWT access cookie.
-- The backend extracts `userId` from the JWT `sub` claim.
-- A user can only update their own profile — no admin override in Module 2.
-
----
-
-## Remaining Limitations
-
-- Avatar and banner images are stored as URLs only. Real file upload/CDN storage is future work (post-Module 2).
-- `FriendsOnly` visibility is enforced as owner-only until Module 3 (Friends & Social Graph) is implemented.
-- The profile route (`/profile/[userId]`) uses the ID parameter to load profiles; public profiles are fetched by username. A routing update to use usernames in URLs directly is planned.
-- Stats (matches, win rate, ELO history), match history, achievements, and friends count on the profile page remain placeholder values. They will be wired in Modules 3, 8, and 10.
+Stats, achievements, match history, friends count, favorite games, presence/activity, notifications, and similar later-module data remain placeholders.

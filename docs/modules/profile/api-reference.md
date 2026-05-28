@@ -2,163 +2,81 @@
 
 Base path: `/api/profile`
 
-All state-changing endpoints require `X-Requested-With: XMLHttpRequest` (CSRF defense).
+All state-changing endpoints require `X-Requested-With: XMLHttpRequest`. Authentication uses HttpOnly cookies.
 
----
+## Profile
 
-## GET /api/profile/me
+- `GET /me` returns the authenticated user's profile.
+- `PUT /me` updates display name, bio, region, status message, visibility, and legacy URL fields.
+- `GET /{username}` returns a public profile when visibility allows it.
+- `PUT /me/username` changes the username when available.
+- `POST /me/username-change-request` stores a username-change request for review.
+- `GET /me/username-change-request` returns the latest request.
+- `GET /me/links` and `PUT /me/links` read/replace external links.
+- `GET /me/interests` and `PUT /me/interests` read/replace interest tags.
 
-Returns the authenticated user's full profile.
+Profile responses include `avatarUrl`, `bannerUrl`, `hasUploadedAvatar`, `hasUploadedBanner`, `color`, `initials`, and `visibility`. They do not include email, password hash, OAuth data, tokens, or private auth/security fields.
 
-**Auth:** Required.
+## Avatar Upload
 
-**Response 200:**
+`POST /me/avatar/upload-url`
+
 ```json
 {
-  "userId": "uuid",
-  "username": "myhandle",
-  "displayName": "My Name",
-  "bio": "About me",
-  "avatarUrl": "https://...",
-  "bannerUrl": null,
-  "statusMessage": "Playing chess",
-  "region": "EU-West",
-  "color": "#F0394B",
-  "initials": "MN",
-  "visibility": "Public",
-  "role": "Player",
-  "level": 3,
-  "elo": 1240,
-  "joinedAt": "2026-01-01T00:00:00Z",
-  "links": [
-    { "id": "uuid", "platform": "github", "url": "https://github.com/me", "displayLabel": null, "sortOrder": 0 }
-  ],
-  "interests": ["board-games", "puzzle-games"]
+  "fileName": "avatar.png",
+  "contentType": "image/png",
+  "fileSizeBytes": 123456
 }
 ```
 
-**Note:** Email, password hash, OAuth tokens, and security fields are never returned.
+Returns a short-lived presigned PUT URL and backend-generated object key.
 
----
-
-## PUT /api/profile/me
-
-Update the authenticated user's profile fields.
-
-**Auth:** Required. CSRF header required.
-
-**Body:**
 ```json
 {
-  "displayName": "My Name",
-  "bio": "About me",
-  "avatarUrl": "https://cdn.example.com/avatar.png",
-  "bannerUrl": null,
-  "region": "NA-East",
-  "statusMessage": "Playing chess",
-  "visibility": "Public"
+  "uploadUrl": "https://...",
+  "objectKey": "profile-assets/users/{userId}/avatar/{uuid}.png",
+  "contentType": "image/png",
+  "expiresAtUtc": "2026-05-28T12:00:00Z"
 }
 ```
 
-**Response 200:** Updated `ProfileDto`.
+Client uploads the file with `PUT uploadUrl`, then calls `POST /me/avatar/confirm`:
 
-**Response 400:** Validation error (empty display name, invalid URL, unknown visibility).
-
----
-
-## PUT /api/profile/me/username
-
-Change the authenticated user's username/handle.
-
-**Auth:** Required. CSRF header required.
-
-**Body:**
 ```json
-{ "username": "newhandle" }
+{ "objectKey": "profile-assets/users/{userId}/avatar/{uuid}.png" }
 ```
 
-**Response 204:** Success.
+Removal: `DELETE /me/avatar`
 
-**Response 400:** Validation error (too short, invalid chars).
+Fallback color: `PUT /me/avatar/fallback`
 
-**Response 409:** Username already taken.
-
----
-
-## GET /api/profile/{username}
-
-Get a public profile by username.
-
-**Auth:** Optional (unauthenticated requests can view public profiles).
-
-**Response 200:** `ProfileDto`.
-
-**Response 403:** Profile is private or friends-only and the requester is not the owner.
-
-**Response 404:** Username not found.
-
----
-
-## GET /api/profile/me/links
-
-Get the authenticated user's external links.
-
-**Auth:** Required.
-
-**Response 200:** Array of `ExternalLinkDto`.
-
----
-
-## PUT /api/profile/me/links
-
-Replace the authenticated user's external links (full replace).
-
-**Auth:** Required. CSRF header required.
-
-**Body:**
 ```json
-{
-  "links": [
-    { "platform": "github", "url": "https://github.com/me", "displayLabel": null, "sortOrder": 0 }
-  ]
-}
+{ "color": "#3366AA" }
 ```
 
-Allowed platforms: `github`, `twitter`, `instagram`, `discord`, `website`, `youtube`, `twitch`, `linkedin`.
+## Banner Upload
 
-Max 8 links. Send an empty array to clear all links.
+`POST /me/banner/upload-url`
 
-**Response 200:** Updated array of `ExternalLinkDto`.
+Same request shape as avatar. Object keys use:
 
-**Response 400:** Invalid platform or URL.
-
----
-
-## GET /api/profile/me/interests
-
-Get the authenticated user's game interest tags.
-
-**Auth:** Required.
-
-**Response 200:** Array of strings, e.g. `["board-games", "puzzle-games"]`.
-
----
-
-## PUT /api/profile/me/interests
-
-Replace the authenticated user's interest tags (full replace).
-
-**Auth:** Required. CSRF header required.
-
-**Body:**
-```json
-{ "interests": ["board-games", "strategy-games"] }
+```text
+profile-assets/users/{userId}/banner/{uuid}.{ext}
 ```
 
-Allowed values: `board-games`, `word-games`, `puzzle-games`, `strategy-games`, `arcade-games`, `casual-games`, `card-games`, `trivia`.
+Client uploads with `PUT uploadUrl`, then calls `POST /me/banner/confirm`.
 
-Max 6 tags. Send an empty array to clear all interests.
+Removal: `DELETE /me/banner`
 
-**Response 200:** Updated array of strings.
+## Media Validation
 
-**Response 400:** Unknown interest tag.
+| Media | Max size | Allowed content types |
+|---|---:|---|
+| Avatar | 5 MB | `image/jpeg`, `image/png`, `image/webp` |
+| Banner | 10 MB | `image/jpeg`, `image/png`, `image/webp` |
+
+SVG is rejected. Object keys are generated by the backend and must belong to the authenticated user.
+
+## Visibility
+
+`Public` is visible to everyone. `Private` is owner-only. `FriendsOnly` is stored but behaves owner-only until Module 3 implements friends.
