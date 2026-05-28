@@ -82,10 +82,31 @@ product data lives in `src/mock/`.
 | Rate limiting, account lockout, CSRF checks, secure headers | Done |
 | Optimistic concurrency on refresh rotation | Done |
 | Security event logging and token cleanup background service | Done |
-| Backend tests | Done |
-| Frontend auth pages, protected routes, Google Sign-In | Done |
+| Change password, change email, active sessions, revoke session, delete account | Done |
+| Backend: 120 unit + 59 integration tests | Done |
+| Frontend auth pages, protected routes, Google Sign-In, account security settings wired | Done |
 
-### Modules 2-15: Planned, with mock UI already present
+### Module 2: User Profile & Social Identity — Complete
+
+| Area | Status |
+|---|---|
+| Backend: UserProfile fields on User entity (StatusMessage, Visibility) | Done |
+| Backend: Default profile exists for every registered user | Done |
+| Backend: Current-user profile endpoint | Done |
+| Backend: Public profile endpoint with visibility rules | Done |
+| Backend: Profile update (display name, bio, region, status, avatar, banner, visibility) | Done |
+| Backend: Username/handle change with uniqueness enforcement | Done |
+| Backend: External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website) | Done |
+| Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
+| Backend: EF Core migration `AddUserProfiles` | Done — verified locally |
+| Backend: 25 unit + 16 integration tests for profile scope | Done |
+| Frontend: ProfilePage wired to real profile API | Done |
+| Frontend: SettingsPage profile card wired to real profile API | Done |
+| Frontend: Topbar/Sidebar identity already wired via auth session | Done |
+| Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
+| Production: Deployed migration verification | Pending deployment |
+
+### Modules 3–15: Planned
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
