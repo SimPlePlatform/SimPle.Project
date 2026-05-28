@@ -11,9 +11,12 @@ dotnet test tests/SimPle.UnitTests/SimPle.UnitTests.csproj --no-build
 dotnet test tests/SimPle.UnitTests/SimPle.UnitTests.csproj --collect:"XPlat Code Coverage" --settings coverage.unit.runsettings --results-directory ./coverage-unit-scoped
 ```
 
-`dotnet build` passed with 0 warnings and 0 errors. The unit test run passed
-with **100 unit tests**. Integration tests cover **45 test methods** across
-`AuthEndpointsTests`, `AuthDatabaseModelTests`, and `ExceptionHandlingMiddlewareTests`.
+`dotnet build` passed with 0 warnings and 0 errors.
+
+**Module 1 finalization (module-01-auth-finalization):** 120 unit tests, 59 integration
+tests. Added `AccountSecurityTests` (20 unit) and `AccountSecurityEndpointsTests`
+(14 integration) covering change-password, change-email, sessions list, session
+revoke, and delete-account.
 
 ## What The Tests Cover
 

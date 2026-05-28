@@ -1,70 +1,60 @@
-# Module 2: User Profile & Social Identity — Security Audit
+# Module 2: User Profile & Social Identity Security Audit
 
 ## Status
 
-**Not started.** No backend or frontend code exists for this module.
+Implemented for local/backend/frontend scope. Local profile media uses MinIO as S3-compatible storage. AWS S3 remains the production target. Production CloudFront delivery and deployed AWS S3 verification remain planned.
 
----
+## Implemented Controls
 
-## Planned Scope
+- Authenticated write endpoints with CSRF header requirement.
+- Owner-only profile mutations.
+- Server-side profile visibility enforcement:
+  - `Public`: visible to everyone.
+  - `Private`: owner-only.
+  - `FriendsOnly`: stored but owner-only until Module 3.
+- Safe public DTOs: no email, password hash, OAuth IDs, tokens, auth state, or private account fields.
+- Private S3-compatible bucket presigned upload flow.
+- Local MinIO API `http://localhost:9000`, console `http://localhost:9001`, bucket `simple-profile-assets-dev`.
+- AWS S3 production path preserved by changing only storage configuration.
+- Backend-generated object keys only.
+- Confirm step checks object ownership prefix and object existence.
+- JPEG, PNG, and WebP only.
+- SVG rejected.
+- Avatar 5 MB max; banner 10 MB max.
+- Avatar/banner removal clears stored object keys and requests storage deletion.
 
-**Expected backend files (not yet created):**
-- `SimPle.Api/Controllers/ProfileController.cs`
-- `SimPle.Application/Profile/Services/ProfileService.cs`
-- `SimPle.Application/Profile/DTOs/*.cs`
-- `SimPle.Application/Profile/Validators/*.cs`
-- `SimPle.Infrastructure/Persistence/Repositories/ProfileRepository.cs`
+## Required Local MinIO Config
 
-**Expected frontend files (not yet created):**
-- `frontend/src/features/profile/ProfilePage.tsx`
-- `frontend/src/features/profile/EditProfileModal.tsx`
-- `frontend/src/features/profile/AvatarUpload.tsx`
+```text
+Storage__Provider=S3Compatible
+Storage__BucketName=simple-profile-assets-dev
+Storage__Region=us-east-1
+Storage__ServiceUrl=http://localhost:9000
+Storage__AccessKey=simpleadmin
+Storage__SecretKey=simpleadmin123
+Storage__ProfilePrefix=profile-assets
+Storage__ForcePathStyle=true
+Storage__UploadUrlExpiryMinutes=5
+Storage__ReadUrlExpiryMinutes=30
+```
 
----
+## Future AWS Production Config
 
-## Planned Features
-
-- View and edit display name, bio, avatar
-- Username change (rate-limited)
-- Avatar upload and storage
-- Profile visibility settings (public / friends-only / private)
-- Social links (optional, user-controlled)
-
----
-
-## Security Requirements For Implementation
-
-| Requirement | Why |
-|---|---|
-| Authenticate all write endpoints | Profile changes must require a valid access cookie |
-| Authorize by user ID | Users may only edit their own profile; check `UserId == requestingUserId` |
-| Validate and sanitize text inputs | Bio and display name are rendered in the UI — XSS if unsanitized |
-| Validate file type and size on avatar upload | Prevent polyglot files, oversized uploads, server-side path traversal |
-| Store avatars outside the webroot or use a CDN | Direct filesystem access must not reach app code or OS |
-| Strip EXIF metadata from uploaded images | EXIF can contain GPS coordinates and device identifiers |
-| Rate-limit username changes | Prevent username squatting or rapid churn to confuse other users |
-| Profile visibility enforced server-side | Never rely on frontend to hide private profiles |
-| No PII in public profile by default | Email address must not be shown on public profile pages |
-| Input length caps enforced in validator and database | Prevent oversized strings that bypass UI-level limits |
-
----
-
-## Findings
-
-None — module not yet implemented.
-
----
+```text
+Storage__Provider=AWS
+Storage__BucketName=simpleplatform-profile-assets-prod
+Storage__Region=<real-aws-region>
+Storage__ServiceUrl=
+Storage__AccessKey=<configured-in-host-secrets-or-empty-if-using-role>
+Storage__SecretKey=<configured-in-host-secrets-or-empty-if-using-role>
+Storage__ProfilePrefix=profile-assets
+Storage__ForcePathStyle=false
+Storage__UploadUrlExpiryMinutes=5
+Storage__ReadUrlExpiryMinutes=30
+```
 
 ## Remaining Risks
 
-| Risk | Notes |
-|---|---|
-| Avatar upload attack surface | File upload is one of the most commonly exploited features; requires careful content-type validation, size limits, and storage isolation |
-| Stored XSS in bio/display name | Must sanitize or encode user-supplied strings before rendering |
-| IDOR on profile edits | Must verify ownership before accepting update |
-
----
-
-## Audit Status
-
-Planned. Will be reviewed when implementation begins.
+- Production CloudFront delivery is not configured or verified.
+- Deployed S3 environment verification is pending.
+- `FriendsOnly` requires Module 3 friend graph enforcement before it can mean actual friends-only.

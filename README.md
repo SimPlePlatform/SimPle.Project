@@ -82,10 +82,34 @@ product data lives in `src/mock/`.
 | Rate limiting, account lockout, CSRF checks, secure headers | Done |
 | Optimistic concurrency on refresh rotation | Done |
 | Security event logging and token cleanup background service | Done |
-| Backend tests | Done |
-| Frontend auth pages, protected routes, Google Sign-In | Done |
+| Change password, change email, active sessions, revoke session, delete account | Done |
+| Backend: 120 unit + 59 integration tests | Done |
+| Frontend auth pages, protected routes, Google Sign-In, account security settings wired | Done |
 
-### Modules 2-15: Planned, with mock UI already present
+### Module 2: User Profile & Social Identity — Complete
+
+| Area | Status |
+|---|---|
+| Backend: UserProfile fields on User entity (StatusMessage, Visibility, avatar/banner object keys, fallback color) | Done |
+| Backend: Default profile exists for every registered user | Done |
+| Backend: Current-user profile endpoint | Done |
+| Backend: Public profile endpoint with visibility rules | Done |
+| Backend: Profile update (display name, bio, region, status, fallback avatar color, visibility) | Done |
+| Backend: S3 presigned upload flow for avatar and cover images | Done |
+| Backend: Local MinIO support for S3-compatible profile media storage | Done |
+| Backend: AWS S3 production path preserved through storage configuration | Done |
+| Backend: Username/handle change with uniqueness enforcement | Done |
+| Backend: External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website) | Done |
+| Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
+| Backend: EF Core migration `AddUserProfiles` | Done — verified locally |
+| Backend: 25 unit + 16 integration tests for profile scope | Done |
+| Frontend: ProfilePage wired to real profile API | Done |
+| Frontend: SettingsPage profile card wired to real profile API | Done |
+| Frontend: Topbar/Sidebar identity already wired via auth session | Done |
+| Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
+| Production: CloudFront delivery and deployed S3 verification | Pending deployment |
+
+### Modules 3–15: Planned
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -134,7 +158,6 @@ Purpose:
 - Secure account creation, sign-in, browser sessions, account recovery, and
   account-security settings.
 
-Implemented:
 - [x] Email/password register, login, logout, logout-all, refresh token flow
 - [x] Current user endpoint
 - [x] JWT access cookie and hashed rotating refresh token storage
@@ -146,83 +169,48 @@ Implemented:
 - [x] reCAPTCHA on login and registration
 - [x] Account lockout and suspension enforcement
 - [x] Security event logging and token cleanup background service
+- [x] Change password (verifies current, revokes all sessions)
+- [x] Change email flow (verification link to new address)
+- [x] Active sessions list with IP and device info
+- [x] Revoke individual session
+- [x] Revoke all sessions / sign out all devices
+- [x] Account delete with password confirmation
+- [ ] Google OAuth link/unlink management (planned)
+- [ ] Production PostgreSQL migration verification (pending deployment)
 
-Planned to support current settings mock UI:
-- [ ] Change email flow
-- [ ] Change password flow
-- [ ] Google OAuth link/unlink management
-- [ ] Active sessions/device list
-- [ ] Revoke active session
-- [ ] Account deactivation/delete flow with confirmation
-- [ ] Production PostgreSQL migration verification
-
-Status:
-- Implemented for core auth.
-- Account-security settings are planned.
+Status: **Complete** for core auth and account-security settings.
 
 ### Module 2: User Profile & Social Identity
 
 Purpose:
-- Make the current profile and profile-settings mock UI real.
-- Own public social identity, not account security.
+- Public social identity, profile page, and profile-settings UI wired to the backend.
 
-Current UI target:
-- `/profile/[userId]`
-- `/settings` -> Account -> Profile card
-- Sidebar/topbar user identity display
+- [x] Display name, bio, region, status message, fallback avatar color, avatar/banner display URLs
+- [x] Avatar/profile picture upload, replace, remove, and fallback avatar color
+- [x] Cover/banner upload, replace, remove, and fallback banner
+- [x] Local MinIO support for S3-compatible profile media storage
+- [x] AWS S3 production path preserved through storage configuration
+- [x] Avatar/profile picture upload, replace, remove, and fallback behavior
+- [x] Cover/banner upload, replace, remove, and fallback behavior
+- [x] Presigned upload flow for profile media
+- [x] Avatar and banner image upload via private S3-compatible presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
+- [x] Username/handle display; username change requires admin approval (request stored)
+- [x] Profile visibility: public, friends-only (owner-only until Module 3), private
+- [x] External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website)
+- [x] Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia)
+- [x] Public profile page with visibility enforcement
+- [x] Own profile page with inline edit
+- [x] Settings page profile card wired to real API
+- [x] Sidebar and topbar identity from real auth session
+- [x] Role and ELO display (read-only)
+- [x] Ownership checks and safe DTOs (no email/auth fields in public profile)
+- [x] EF Core migrations: `AddUserProfiles`, `AddUsernameChangeRequests`
+- [x] Unit and integration test coverage >90% for profile scope
+- [x] `docs/modules/profile/` documentation added
+- [ ] FriendsOnly visibility enforced per-friend (pending Module 3)
+- [ ] Production CloudFront delivery and deployed S3 environment verification (pending deployment)
 
-Included features:
-- [ ] Public profile page
-- [ ] Own profile page
-- [ ] Display name
-- [ ] Username/handle, with validation and change limits
-- [ ] Bio/about text
-- [ ] Avatar display
-- [ ] Banner/cover display
-- [ ] Region/location display
-- [ ] Profile visibility: public, friends-only, private
-- [ ] Optional status message if kept separate from realtime presence
-- [ ] Optional external social links if added to UI later
-- [ ] Read-only role/account tier display if useful, without billing logic
-
-Backend scope:
-- [ ] `ProfileController`
-- [ ] Profile service
-- [ ] Public profile DTO
-- [ ] Own profile DTO
-- [ ] Update profile DTO
-- [ ] Validators for username, display name, bio, visibility, links
-- [ ] Server-side ownership checks for updates
-- [ ] Server-side visibility checks for public/friends/private profiles
-
-Frontend scope:
-- [ ] Replace `CURRENT_USER` mock data in profile identity areas with API data
-- [ ] Wire profile save actions to API
-- [ ] Keep stats, achievements, match history, friends count, and favorite games
-      as planned placeholders until later modules provide real data
-
-Database scope:
-- [ ] Reuse existing `User` profile fields for MVP where possible: display name,
-      bio, avatar URL, banner URL, color, initials, region
-- [ ] Add only missing profile fields needed by the UI, such as visibility and
-      optional status message/location
-- [ ] Defer dedicated file-upload storage unless avatar/banner upload is built
-
-Security/testing scope:
-- [ ] Do not expose email on public profiles
-- [ ] IDOR tests for editing another user's profile
-- [ ] Validation tests for display name, username, bio, and visibility
-- [ ] Public/private profile access tests
-
-Documentation scope:
-- [ ] Add `docs/modules/profile/README.md`
-- [ ] Add `docs/modules/profile/api-reference.md`
-- [ ] Add `docs/modules/profile/technical-flow.md`
-- [ ] Add `docs/modules/profile/testing-report.md`
-- [ ] Update Module 2 security audit to mention existing mock UI
-
-Status:
-- UI only, with partial backend domain fields already on `User`.
+Status: **Complete** for local/backend/frontend Module 2 scope. Production CloudFront delivery and deployed environment verification remain planned.
 
 ### Module 3: Friends & Social Graph
 
