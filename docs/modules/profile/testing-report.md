@@ -1,4 +1,4 @@
-# Profile Testing Report
+﻿# Profile Testing Report
 
 Date: 2026-05-28
 
@@ -19,15 +19,14 @@ npm audit
 
 ## Results So Far
 
-- Backend unit tests: 158 passed.
-- Backend integration tests: 88 passed.
-- Backend unit tests after local MinIO storage options/tests: 163 passed.
+- Backend unit tests: 178 passed.
+- Backend integration tests: 91 passed.
 - Backend coverage collection: passed.
 - Backend vulnerable package scan: no vulnerable packages found.
 - Frontend lint: passed.
 - Frontend build: passed.
-- Frontend tests: 60 passed.
-- Frontend coverage: 83.52% lines overall.
+- Frontend tests: 64 passed.
+- Frontend coverage: 83.79% lines overall.
 - Frontend audit: 2 moderate advisories through `next` -> `postcss`; available fix requires `npm audit fix --force`, so it was not applied.
 
 The first frontend test run was executed concurrently with `npm run build` and had three unrelated render-test timeouts. Rerunning `npm test` by itself passed.
@@ -45,14 +44,21 @@ The first frontend test run was executed concurrently with `npm run build` and h
 - Confirm upload updates avatar/banner object key.
 - Remove avatar/banner clears media and returns fallback behavior.
 - Avatar fallback color update.
+- Banner fallback color update.
 - Public/private/friends-only visibility behavior.
 - Public profile DTO excludes private/auth fields.
+- External social links for GitHub, X/Twitter, Instagram, Discord, and website.
+- HTTPS-only URL validation, dangerous-scheme rejection, max links, and duplicate link rejection.
+- Default `Player` profile type.
+- `Developer` profile type update and safe public display.
+- `Developer` does not grant admin permissions.
+- Monthly username policy: first change applies immediately, second change creates a pending request, pending request edit updates the same request, cancellation marks the request cancelled, and used monthly request allowance is not restored.
 
 ## Coverage
 
-- Module 2 profile/media/visibility backend scoped line coverage: 94.49% (377/399), scoped to implemented profile DTO/controller/service media and visibility paths plus S3-compatible storage adapter behavior, excluding unrelated links/interests/username-review paths.
-- Whole-backend combined line coverage: 40.04% (2352/5874).
-- Frontend line coverage: 83.52% (147/176).
+- Module 2 profile/social identity/media/username scoped backend line coverage: 84.26% (846/1004), union of latest unit and integration Cobertura results, excluding generated migrations.
+- Whole-backend union line coverage: 35.31% (2525/7151), union of latest unit and integration Cobertura results.
+- Frontend line coverage: 83.79% (150/179).
 
 ## Manual Smoke Test
 
@@ -60,6 +66,7 @@ The first frontend test run was executed concurrently with `npm run build` and h
 - Replace avatar.
 - Remove avatar.
 - Change fallback avatar color.
+- Change fallback banner color.
 - Upload banner.
 - Replace banner.
 - Remove banner.
@@ -68,3 +75,13 @@ The first frontend test run was executed concurrently with `npm run build` and h
 - Set visibility friends-only.
 - View public profile as another user.
 - Confirm private/friends-only profile is hidden from another user.
+- Create/edit external links.
+- Confirm invalid links are rejected.
+- Switch profile type to Player.
+- Switch profile type to Developer.
+- Confirm Developer does not grant admin or publishing permissions.
+- First username change applies immediately.
+- Second username change creates an admin-review request.
+- Pending username request status is visible.
+- Pending username request edit works.
+- Pending username request cancel works and does not restore the monthly request allowance.

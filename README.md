@@ -1,4 +1,4 @@
-# SimPle
+﻿# SimPle
 
 **SimPle** is a full-stack social gaming platform. Users create accounts, build
 friend lists, host lobbies, chat in real time, and compete across a growing
@@ -86,7 +86,7 @@ product data lives in `src/mock/`.
 | Backend: 120 unit + 59 integration tests | Done |
 | Frontend auth pages, protected routes, Google Sign-In, account security settings wired | Done |
 
-### Module 2: User Profile & Social Identity — Complete
+### Module 2: User Profile & Social Identity â€” Complete
 
 | Area | Status |
 |---|---|
@@ -98,10 +98,11 @@ product data lives in `src/mock/`.
 | Backend: S3 presigned upload flow for avatar and cover images | Done |
 | Backend: Local MinIO support for S3-compatible profile media storage | Done |
 | Backend: AWS S3 production path preserved through storage configuration | Done |
-| Backend: Username/handle change with uniqueness enforcement | Done |
-| Backend: External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website) | Done |
+| Backend: Monthly username change policy with immediate change and admin-review request tracking | Done |
+| Backend: External social links (GitHub, X/Twitter, Instagram, Discord, website) | Done |
+| Backend: Profile type social identity (`Player`, `Developer`) | Done |
 | Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
-| Backend: EF Core migration `AddUserProfiles` | Done — verified locally |
+| Backend: EF Core migration `AddUserProfiles` | Done â€” verified locally |
 | Backend: 25 unit + 16 integration tests for profile scope | Done |
 | Frontend: ProfilePage wired to real profile API | Done |
 | Frontend: SettingsPage profile card wired to real profile API | Done |
@@ -109,7 +110,7 @@ product data lives in `src/mock/`.
 | Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
 | Production: CloudFront delivery and deployed S3 verification | Pending deployment |
 
-### Modules 3–15: Planned
+### Modules 3â€“15: Planned
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -194,9 +195,12 @@ Purpose:
 - [x] Cover/banner upload, replace, remove, and fallback behavior
 - [x] Presigned upload flow for profile media
 - [x] Avatar and banner image upload via private S3-compatible presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
-- [x] Username/handle display; username change requires admin approval (request stored)
+- [x] Username/handle display; 1 immediate change and 1 admin-review request per UTC calendar month
 - [x] Profile visibility: public, friends-only (owner-only until Module 3), private
-- [x] External social links (GitHub, Twitter, Instagram, Discord, YouTube, Twitch, LinkedIn, website)
+- [x] Web profiles: external social links for Instagram, X/Twitter, website, GitHub, and Discord where supported
+- [x] Privacy control: public and private profile visibility
+- [x] Friends-only visibility stored/handled if present, with Module 3 behavior documented
+- [x] Profile type: Player and Developer social identity distinction
 - [x] Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia)
 - [x] Public profile page with visibility enforcement
 - [x] Own profile page with inline edit
@@ -204,7 +208,7 @@ Purpose:
 - [x] Sidebar and topbar identity from real auth session
 - [x] Role and ELO display (read-only)
 - [x] Ownership checks and safe DTOs (no email/auth fields in public profile)
-- [x] EF Core migrations: `AddUserProfiles`, `AddUsernameChangeRequests`
+- [x] EF Core migrations: `AddUserProfiles`, `AddUsernameChangeRequests`, `AddProfileSocialIdentityFields`, `FixProfileSocialIdentityAndUsernamePolicy`
 - [x] Unit and integration test coverage >90% for profile scope
 - [x] `docs/modules/profile/` documentation added
 - [ ] FriendsOnly visibility enforced per-friend (pending Module 3)

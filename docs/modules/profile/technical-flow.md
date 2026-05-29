@@ -1,4 +1,4 @@
-# Profile Media Technical Flow
+﻿# Profile Media Technical Flow
 
 ## Upload
 
@@ -15,7 +15,19 @@
 
 ## Removal
 
-Avatar and banner removal clear the stored object key and request object deletion from storage. The UI then returns to fallback avatar initials/color or default banner styling.
+Avatar and banner removal clear the stored object key and request object deletion from storage. The UI then returns to fallback avatar initials/color or the stored fallback banner color. Fallback colors are stored as validated hex colors and are editable only when the corresponding uploaded media is absent.
+
+## Social Identity
+
+External web profiles are edited only through authenticated owner endpoints. The backend validates the supported platform set, requires absolute HTTPS URLs, rejects dangerous schemes, enforces the max link count, and prevents duplicate platform+URL entries before replacing the stored list.
+
+Profile visibility is checked before returning a public profile. `Public` profiles are visible to everyone; `Private` profiles are owner-only; `FriendsOnly` is stored but behaves owner-only until Module 3 provides the friend graph.
+
+Profile type is stored on the user profile as `Player` or `Developer`. `Player` is the default. `Developer` is display-only Module 2 social identity and does not grant admin, billing, subscription, or game publishing permissions.
+
+## Username Policy
+
+Username changes are tracked by UTC calendar month. If the user has not used the immediate monthly change, `PUT /me/username` applies the new username immediately and records the usage month. If the immediate monthly change was already used, the same request creates or updates one pending admin-review request for that month. Canceling a pending request marks it cancelled and does not restore the monthly admin-request allowance. Editing a pending request updates the same row.
 
 ## Storage Rules
 

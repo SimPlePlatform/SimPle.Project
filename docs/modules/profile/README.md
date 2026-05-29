@@ -1,6 +1,6 @@
-# Module 2: User Profile & Social Identity
+﻿# Module 2: User Profile & Social Identity
 
-Module 2 is implemented for local/backend/frontend scope. It provides the profile page, profile settings, avatar and cover media management, username-change requests, external links, interest tags, and profile visibility.
+Module 2 is implemented for local/backend/frontend scope. It provides the profile page, profile settings, avatar and cover media management, username-change requests, external links, interest tags, profile visibility, and profile type.
 
 Local development uses MinIO as S3-compatible storage. AWS S3 remains the production deployment target. Production CloudFront delivery and deployed AWS S3 verification remain planned.
 
@@ -21,6 +21,13 @@ Local development uses MinIO as S3-compatible storage. AWS S3 remains the produc
 - Size limits: avatar 5 MB, banner 10 MB.
 - Profile visibility: `Public`, `FriendsOnly`, `Private`.
 - `FriendsOnly` is stored now but behaves like private until Module 3 friends are implemented.
+- Web profile links for `github`, `xtwitter`/`twitter`, `instagram`, `discord`, and `website`.
+- External link URLs must be absolute HTTPS URLs. `javascript:`, `data:`, `file:`, `http:`, invalid, empty, duplicate platform+URL, and unsupported platforms are rejected.
+- Unknown region/location is left empty or shown with a neutral fallback; no hardcoded regional profile/location value is used.
+- Profile type: `Player` is the default normal gaming user; `Developer` marks a game publisher/developer social identity.
+- `Developer` does not grant admin, billing, subscription, or publishing permissions. Publishing tools belong to later game publishing modules.
+- Username changes allow 1 immediate change per UTC calendar month and 1 admin-review request per UTC calendar month after that.
+- Editing a pending username request updates the same request. Canceling it does not restore the monthly admin-request allowance.
 - Public profile DTOs do not expose email, password hash, OAuth IDs, tokens, auth state, or private account fields.
 
 ## Fallbacks
@@ -29,7 +36,8 @@ Local development uses MinIO as S3-compatible storage. AWS S3 remains the produc
 - Users can change the fallback avatar color when no uploaded avatar is present.
 - Removing an uploaded avatar clears the object key and returns to initials plus fallback color.
 - If no uploaded cover exists, the existing default banner style is shown.
-- Removing an uploaded cover clears the object key and returns to the default banner.
+- Users can change the fallback banner color when no uploaded banner is present.
+- Removing an uploaded cover clears the object key and returns to the fallback banner color.
 
 ## Required Local MinIO Configuration
 
@@ -90,3 +98,12 @@ AWS credentials must come from the backend runtime environment, user secrets, in
 Stats, achievements, match history, friends count, favorite games, presence/activity, notifications, and similar later-module data remain placeholders.
 
 Buckets should stay private. The frontend receives only presigned URLs and never storage credentials.
+
+## Database
+
+- `users.Visibility` stores `Public`, `FriendsOnly`, or `Private`.
+- `users.ProfileType` stores `Player` or `Developer`. Existing `Gamer` string values are migrated to `Player` by `FixProfileSocialIdentityAndUsernamePolicy`.
+- `users.BannerFallbackColor` stores the default banner color.
+- `users.LastUsernameImmediateChangeYear/Month` and `users.LastUsernameAdminRequestYear/Month` enforce the monthly username policy.
+- `username_change_requests` stores the requested username, normalized value, status, request UTC year/month, cancellation time, review time, and reviewer metadata.
+- `profile_external_links` stores owner-scoped external links with platform, URL, optional display label, sort order, and timestamps.
