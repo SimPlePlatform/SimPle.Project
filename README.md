@@ -110,15 +110,15 @@ product data lives in `src/mock/`.
 | Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
 | Production: CloudFront delivery and deployed S3 verification | Pending deployment |
 
-### Module 3: Friends & Social Graph - Revision 2 Backend/Frontend/E2E Verified, Production Review Pending
+### Module 3: Friends & Social Graph - Revision 2 Complete, Merged to Main
 
 The 2026-07-06 revision-1 backend/security/frontend/E2E evidence remains valid for the narrower friendship
 contract. A later product-journey audit found that global people search, canonical profile routing, identity
 links, relationship-aware profile actions, and privacy-aware profile/mutual friend drill-down were not in that
-contract. Module 3 was reopened before Module 4; the revision-2 backend, frontend, and live E2E verification
-are now complete and independently verified (including two real bugs found and fixed during the live E2E
-run — see `docs/modules/module-03-friends-social-graph/testing-report.md`), but the module is **not yet
-complete**: production review and final evidence sign-off are still outstanding.
+contract. Module 3 was reopened before Module 4; the revision-2 backend, frontend, live E2E verification,
+production review, and final evidence sign-off are now all complete (including two real bugs found and fixed
+during the live E2E run — see `docs/modules/module-03-friends-social-graph/testing-report.md`), and the module
+is **merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`.
 
 | Area | Status |
 |---|---|
@@ -141,7 +141,7 @@ complete**: production review and final evidence sign-off are still outstanding.
 | Revision 2: backend 321 unit + 224 integration; frontend 188 Vitest; contract-drift DRIFT=0 | Done - 0 failed |
 | Revision 2: security findings M03-008/M03-009/M03-011 fixed, M03-010 resolved (product decision) | Done - verified 2026-07-10 |
 | Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack, 2026-07-10 |
-| Revision 2: production review and final evidence sign-off | Pending |
+| Revision 2: production review and final evidence sign-off | Done - merged to `main`, 2026-07-10 |
 
 ### Modules 4-14, 16: Planned; Module 15 Future
 
@@ -325,18 +325,18 @@ Revision-2 verification:
       mutual-friends. Two real product bugs were found and fixed during this run: a `Cursor.cs` pagination
       defect and a `ProtectedRoute`/route-group gap blocking anonymous access to `Public` profiles (now a
       dedicated `(public)` route group) — see `testing-report.md`.
-- [ ] Production review and final evidence sign-off for the full revision-2 scope
+- [x] Production review and final evidence sign-off for the full revision-2 scope
 
 Status:
 - Revision 1 is complete and green (see `docs/modules/module-03-friends-social-graph/`, the security audit,
   and historical final evidence); M03-006 and M03-007 were fixed on 2026-07-06.
-- Revision 2 backend (Steps 2A/2B), frontend (Steps 4A/4B), and live E2E verification are implemented and
-  independently verified, including a follow-up security fix pass verified 2026-07-10 (see `docs/security/
-  audits/module-03-friends-social-graph.md`). **Module 3 is not yet declared complete**: production review
-  and final evidence sign-off remain outstanding. Next action: `/simple production-review module=3`. Module 4
-  must not begin until revision-2 canonical evidence (including production review) passes.
+- Revision 2 backend (Steps 2A/2B), frontend (Steps 4A/4B), live E2E verification, production review, and
+  final evidence are all implemented and independently verified, including a follow-up security fix pass
+  verified 2026-07-10 (see `docs/security/audits/module-03-friends-social-graph.md`). **Module 3 is
+  complete and merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`
+  (`docs/ai-workflow/evidence/module-03-friends-social-graph/revision-2/final.json`).
 
-### Module 4: Game Library & Discovery
+### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Docs In Progress
 
 > Product behavior is authoritative in `../docs/module-requirements/module-04-game-library-discovery.md`.
 
@@ -346,33 +346,47 @@ Purpose:
 
 Current UI target:
 - `/games`
-- `/games/[gameId]`
+- `/games/[slug]`
 - Dashboard continue-playing and recommended game cards
-- Topbar search for games
-- Profile favorite games placeholder
+- Topbar/composed search Games tab
+- Profile favorite games tab
 
 Included features:
-- [ ] Game catalog
-- [ ] Game detail pages
-- [ ] Search, filters, categories/tags, sort
-- [ ] Game rules and descriptions
-- [ ] Supported modes: solo, AI, multiplayer, ranked
-- [ ] Active/disabled game state
-- [ ] Featured/spotlight game
-- [ ] Favorite games, with lifecycle and concurrency behavior defined by the module brief
+- [x] Game catalog (8 seeded games, lifecycle-aware: Draft/ComingSoon/Available/Maintenance/Retired)
+- [x] Game detail pages, including an honest 410 tombstone for retired games
+- [x] Search, filters (category/tag/mode, capped at 5 values/dimension), sort, keyset "load more"
+- [x] Game rules/descriptions and difficulty display
+- [x] Featured/spotlight game (single-featured-rank invariant enforced by a partial unique index)
+- [x] Favorite games (soft-delete `IsActive`+`CycleId`, idempotent PUT/DELETE, real per-user persistence)
+- [ ] Supported modes: solo, AI, multiplayer, ranked (entry actions honestly disabled, naming Modules 6/8/9)
+- [ ] Active/disabled game state per-mode (deferred to owning modules; lifecycle state itself is real)
 
 Backend/database/API work:
-- [ ] Games controller, service, repository or static catalog provider
-- [ ] Game DTOs matching the UI cards/detail page
-- [ ] Seed/configure initial game catalog
+- [x] `GamesController` (6 endpoints), `GamesService`, `GameRepository`
+- [x] Game DTOs matching the UI cards/detail page (`GameCatalogDto`, `GameTombstoneDto`, `GameFavoriteDto`,
+      `GameEntryActionDto`)
+- [x] Seeded initial game catalog via advisory-lock + checksum-idempotent `GameCatalogSeeder`
+- [x] Two additive EF Core migrations, verified on real PostgreSQL
 
 Frontend work:
-- [ ] Replace `GAMES` mock data with API data
-- [ ] Keep Play, Quick Match, Invite Friend, and Create Lobby buttons routed to
-      placeholder flows until Modules 6, 8, and 9 are ready
+- [x] Replaced `GAMES` mock data with live `gamesApi` calls on `/games`, detail, dashboard, search, profile
+- [x] Play, Quick Match, Invite Friend, Create Lobby, and Enter Match Room buttons rendered honestly
+      `disabled`, each naming its real owning module (6, 8, or 9) until that module ships
+
+Verification:
+- [x] Backend: 412 unit + 219 non-Postgres integration + 32 real-Postgres tests, 0 failed
+- [x] Security review (`--security=light`, both backend and post-frontend phases): zero unwaived
+      Critical/High/Medium findings; 2 Low + 4 Info findings recorded and deferred
+- [x] Frontend: 223 Vitest tests, `check-contract-drift.mjs` DRIFT=0
+- [x] Module E2E (Playwright, live local stack): `module-04-game-library.spec.ts` 2/2 passed; also the first
+      module to enforce `accessibilityPolicy: "required"` — 6 real axe-core violations were found and fixed
+      in shared app-shell code (with explicit user sign-off), after which the scan is clean
+- [ ] Production review and final evidence sign-off (next)
 
 Status:
-- UI only, with partial backend domain stub.
+- Backend, security (both phases), frontend, and live E2E/accessibility verification are complete
+  (see `docs/modules/module-04-game-library-discovery/`). Documentation is in progress; production review
+  and final evidence sign-off remain before Module 4 is declared complete.
 
 ### Module 5: Game Hosting Architecture
 
