@@ -8,8 +8,8 @@ penetration tests or automated scanner results.
 
 **Audit type:** Source review, local automated test verification, no external
 attacks.  
-**Last updated:** 2026-05-28  
-**Branch:** `feature/auth-phase-1`
+**Last updated:** 2026-06-29
+**Branch:** `feature/module-03-friends-social-graph`
 
 ---
 
@@ -18,18 +18,18 @@ attacks.
 | Module | Implementation | Audit Status | Findings |
 |---|---|---|---|
 | [01 — Auth & User Management](module-01-authentication-user-management.md) | Complete | Reviewed | 14 findings, all resolved |
-| [02 — User Profile & Social Identity](module-02-user-profile-social-identity.md) | Not started | Planned | No attack surface yet |
-| [03 — Friends & Social Graph](module-03-friends-social-graph.md) | Not started | Planned | No attack surface yet |
+| [02 — User Profile & Social Identity](module-02-user-profile-social-identity.md) | Complete | Reviewed | 3 findings, all resolved (2 Medium, 1 Low) |
+| [03 — Friends & Social Graph](module-03-friends-social-graph.md) | Implemented; DB verified locally | Open — pending M03-001 | 1 Low (open), 1 Medium (deferred), 10 DB tests passed |
 | [04 — Game Library & Discovery](module-04-game-library-discovery.md) | Not started | Planned | No attack surface yet |
 | [05 — Game Hosting Architecture](module-05-game-hosting-architecture.md) | Not started | Planned | No attack surface yet |
-| [06 — Lobby & Matchmaking](module-06-lobby-matchmaking.md) | Not started | Planned | No attack surface yet |
+| [06 — Lobby & Matchmaking](module-06-lobby-matchmaking-system.md) | Not started | Planned | No attack surface yet |
 | [07 — Real-Time Presence & Chat](module-07-realtime-presence-chat.md) | Not started | Planned | No attack surface yet |
-| [08 — Match Room & State](module-08-match-room-state.md) | Not started | Planned | No attack surface yet |
-| [09 — Solo vs AI Flow](module-09-solo-ai-flow.md) | Not started | Planned | No attack surface yet |
+| [08 — Match Room & State](module-08-generic-match-room-state.md) | Not started | Planned | No attack surface yet |
+| [09 — Solo vs AI Flow](module-09-solo-vs-ai-flow.md) | Not started | Planned | No attack surface yet |
 | [10 — Stats, Achievements & Leaderboards](module-10-stats-achievements-leaderboards.md) | Not started | Planned | No attack surface yet |
 | [11 — Notifications & Activity Feed](module-11-notifications-activity-feed.md) | Not started | Planned | No attack surface yet |
-| [12 — Moderation & Admin](module-12-moderation-admin.md) | Not started | Planned | No attack surface yet |
-| [13 — Premium & Subscriptions](module-13-premium-subscriptions.md) | Not started | Planned | No attack surface yet |
+| [12 — Moderation & Admin](module-12-moderation-admin-dashboard.md) | Not started | Planned | No attack surface yet |
+| [13 — Premium & Subscriptions](module-13-premium-subscription-system.md) | Not started | Planned | No attack surface yet |
 | [14 — Security Testing & Production Readiness](module-14-security-testing-production-readiness.md) | In progress | Ongoing | Cross-cutting concerns |
 | [15 — Hardware & Embedded Integration](module-15-hardware-embedded-integration.md) | Not started | Planned | No attack surface yet |
 

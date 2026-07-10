@@ -1,4 +1,4 @@
-# Module 6: Lobby & Matchmaking — Security Audit
+# Module 6: Lobby & Matchmaking System — Security Audit
 
 ## Status
 

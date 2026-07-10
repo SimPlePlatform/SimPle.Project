@@ -8,6 +8,31 @@ This audit was performed against the local development environment using authori
 
 ---
 
+## Severity Summary Table
+
+| Severity | Count | Notes |
+|---|---:|---|
+| Critical | 0 | |
+| High | 0 | |
+| Medium | 2 | M02-001, M02-012 — both Fixed |
+| Low | 1 | M02-002 — Fixed |
+| Info | 0 | |
+
+No Critical or High findings. All three findings were fixed; the remaining 12 audit-matrix items passed on
+review. See Findings Summary and Remaining Risks.
+
+## OWASP / ASVS Mapping
+
+- **A01 (OWASP Top 10) — Broken Access Control / API1 (BOLA):** `/me` endpoints and confirm-object-key
+  ownership scoped to the authenticated user; visibility enforcement on public profiles.
+- **A03 — Injection / A08 — Data Integrity:** media type/size validation (SVG rejected), hex-color regex,
+  HTTPS-only link validation with dangerous-scheme rejection.
+- **A04 — Insecure Design:** presigned direct-to-storage uploads with server-generated keys; private buckets.
+- **API3 — Broken Object Property Level Authorization:** public DTOs exclude email/auth/tokens; no
+  mass-assignable UserId/Role/IsEmailVerified.
+
+---
+
 ## Scope Reviewed
 
 **Backend files:**

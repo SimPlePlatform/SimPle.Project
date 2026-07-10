@@ -6,6 +6,32 @@
 
 ---
 
+## Severity Summary Table
+
+| Severity | Count | Notes |
+|---|---:|---|
+| Critical | 0 | |
+| High | 0 | |
+| Medium | 7 | M01-001..007 — all Fixed |
+| Low | 4 | M01-008..011 — all Fixed |
+| Info | 3 | M01-012..014 — all Fixed |
+
+No Critical or High findings. All 14 findings were fixed during the audit; see Findings. Open items are
+tracked under Remaining Risks.
+
+## OWASP / ASVS Mapping
+
+- **A02/A07 (OWASP Top 10) — Authentication & Cryptographic Failures:** Argon2id hashing, cookie-based JWT,
+  refresh rotation with family revocation, account lockout.
+- **A01 — Broken Access Control:** account-security endpoints scoped to the authenticated user; suspension
+  enforced at login.
+- **A05 — Security Misconfiguration:** security response headers, credentialed CORS, rate-limiter
+  partitioning.
+- **API2 (OWASP API Top 10) — Broken Authentication;** **API4 — Unrestricted Resource Consumption:** per-IP
+  rate limits + CAPTCHA on login/register.
+
+---
+
 ## Scope Reviewed
 
 **Backend files:**
