@@ -1,4 +1,4 @@
-# Module 8: Match Room & State — Security Audit
+# Module 8: Generic Match Room & State — Security Audit
 
 ## Status
 

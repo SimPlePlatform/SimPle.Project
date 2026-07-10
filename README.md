@@ -12,7 +12,7 @@ host platform instead of being hard-coded into the app shell.
 | Repository | Description |
 |---|---|
 | [SimPlePlatform/SimPLe.Backend](https://github.com/SimPlePlatform/SimPLe.Backend) | ASP.NET Core 8 backend: auth, API, database, tests |
-| [SimPlePlatform/SimpLe.Frontend](https://github.com/SimPlePlatform/SimpLe.Frontend) | Next.js 14 frontend: UI, auth pages, app shell, tests |
+| [SimPlePlatform/SimpLe.Frontend](https://github.com/SimPlePlatform/SimpLe.Frontend) | Next.js 16 frontend: UI, auth pages, app shell, tests |
 
 ---
 
@@ -20,8 +20,8 @@ host platform instead of being hard-coded into the app shell.
 
 | Phase | Scope |
 |---|---|
-| **Phase 1** | Social gaming host platform: auth, profiles, friends, game library, game-hosting architecture, lobbies, realtime, chat, match room, stats, notifications, admin, subscriptions |
-| **Phase 2** | Actual games: Wordle with friends, Online Sudoku, Connect Four, Tetris Arena, Chess Lite, Checkers, Memory Grid, Snake Rush |
+| **Phase 1** | Social gaming host platform: auth, profiles, friends, game library, game-hosting architecture, lobbies, realtime, chat, match room, stats, notifications, admin, subscriptions, security/production readiness, trust & legal/compliance surfaces |
+| **Phase 2** | Actual games: Five-Letter Duel, Online Sudoku, Four in a Row, Falling Blocks Arena, Chess Lite, Checkers, Memory Grid, Snake Rush |
 | **Future** | Hardware-enabled games via embedded devices |
 
 Phase 1 builds everything around the games. Phase 2 adds the games themselves
@@ -33,7 +33,7 @@ using the hosting architecture created in Phase 1.
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
+| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS |
 | Backend | ASP.NET Core 8, C# |
 | Database | PostgreSQL + Entity Framework Core 8 |
 | Auth | JWT HttpOnly access cookie + rotating hashed refresh tokens |
@@ -70,7 +70,7 @@ product data lives in `src/mock/`.
 
 ## Current Status
 
-### Module 1: Authentication & Account Security - Complete
+### Module 1: Authentication & Account Security - Complete Core Scope
 
 | Area | Status |
 |---|---|
@@ -86,7 +86,7 @@ product data lives in `src/mock/`.
 | Backend: 120 unit + 59 integration tests | Done |
 | Frontend auth pages, protected routes, Google Sign-In, account security settings wired | Done |
 
-### Module 2: User Profile & Social Identity â€” Complete
+### Module 2: User Profile & Social Identity - Complete Local Scope
 
 | Area | Status |
 |---|---|
@@ -102,7 +102,7 @@ product data lives in `src/mock/`.
 | Backend: External social links (GitHub, X/Twitter, Instagram, Discord, website) | Done |
 | Backend: Profile type social identity (`Player`, `Developer`) | Done |
 | Backend: Game interest tags (board-games, word-games, puzzle, strategy, arcade, casual, card, trivia) | Done |
-| Backend: EF Core migration `AddUserProfiles` | Done â€” verified locally |
+| Backend: EF Core migration `AddUserProfiles` | Done - verified locally |
 | Backend: 25 unit + 16 integration tests for profile scope | Done |
 | Frontend: ProfilePage wired to real profile API | Done |
 | Frontend: SettingsPage profile card wired to real profile API | Done |
@@ -110,7 +110,40 @@ product data lives in `src/mock/`.
 | Security: Ownership checks, safe DTOs, visibility rules, validation | Done |
 | Production: CloudFront delivery and deployed S3 verification | Pending deployment |
 
-### Modules 3â€“15: Planned
+### Module 3: Friends & Social Graph - Revision 2 Backend/Frontend/E2E Verified, Production Review Pending
+
+The 2026-07-06 revision-1 backend/security/frontend/E2E evidence remains valid for the narrower friendship
+contract. A later product-journey audit found that global people search, canonical profile routing, identity
+links, relationship-aware profile actions, and privacy-aware profile/mutual friend drill-down were not in that
+contract. Module 3 was reopened before Module 4; the revision-2 backend, frontend, and live E2E verification
+are now complete and independently verified (including two real bugs found and fixed during the live E2E
+run — see `docs/modules/module-03-friends-social-graph/testing-report.md`), but the module is **not yet
+complete**: production review and final evidence sign-off are still outstanding.
+
+| Area | Status |
+|---|---|
+| Backend: 16 `/api/friends` endpoints (list/search, requests, discovery, suggestions, blocks, settings) | Done |
+| Backend: Friendship/Block/UserFriendSettings/DismissedFriendSuggestion domain + migrations | Done - verified on real PostgreSQL |
+| Backend: Transactional integration-event outbox (7 event types staged with the aggregate write) | Done |
+| Backend: Cross-send auto-accept, decline/cancel cooldowns, block atomicity, concurrency retry | Done |
+| Backend: 273 unit + 187 integration tests (incl. 18 real-Postgres concurrency/migration tests) | Done - 0 failed, 0 skipped |
+| Security: BOLA/IDOR to privacy-safe 404, timing-safe discovery, per-account rate limits | Done - `--security=asvs-lite`, no Critical/High findings |
+| Security: Audit-event logging for denials | Done - M03-006 fixed 2026-07-06 |
+| Security: Block-endpoint response minimality | Done - M03-007 fixed 2026-07-06 |
+| Frontend: `/friends`, dashboard, sidebar badge, invite picker, settings privacy/blocks wired to real API | Done |
+| Frontend: 96 Vitest tests across 7 reconciled suites; contract-drift check DRIFT=0 | Done |
+| Verification: Two-user Playwright E2E against a live local stack | Done - 1/1 passed |
+| Revision 2: canonical `/u/{username}` route and public/authenticated profile behavior | Done |
+| Revision 2: composed people search, identity links, and relationship-aware profile actions | Done |
+| Revision 2: privacy-aware target/mutual friends lists with 20/50 keyset pagination | Done |
+| Revision 2: independent search/request/friends-list visibility and abuse caps | Done |
+| Revision 2: remove fake profile presence/ELO/history/achievements/favorites | Done |
+| Revision 2: backend 321 unit + 224 integration; frontend 188 Vitest; contract-drift DRIFT=0 | Done - 0 failed |
+| Revision 2: security findings M03-008/M03-009/M03-011 fixed, M03-010 resolved (product decision) | Done - verified 2026-07-10 |
+| Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack, 2026-07-10 |
+| Revision 2: production review and final evidence sign-off | Pending |
+
+### Modules 4-14, 16: Planned; Module 15 Future
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -191,8 +224,6 @@ Purpose:
 - [x] Cover/banner upload, replace, remove, and fallback banner
 - [x] Local MinIO support for S3-compatible profile media storage
 - [x] AWS S3 production path preserved through storage configuration
-- [x] Avatar/profile picture upload, replace, remove, and fallback behavior
-- [x] Cover/banner upload, replace, remove, and fallback behavior
 - [x] Presigned upload flow for profile media
 - [x] Avatar and banner image upload via private S3-compatible presigned URLs (JPEG/PNG/WebP, SVG not allowed, 5 MB / 10 MB limits)
 - [x] Username/handle display; 1 immediate change and 1 admin-review request per UTC calendar month
@@ -206,17 +237,20 @@ Purpose:
 - [x] Own profile page with inline edit
 - [x] Settings page profile card wired to real API
 - [x] Sidebar and topbar identity from real auth session
-- [x] Role and ELO display (read-only)
+- [x] Role and legacy ELO display (read-only; revision-2 Module 3 removes it from production profile UI until M10)
 - [x] Ownership checks and safe DTOs (no email/auth fields in public profile)
 - [x] EF Core migrations: `AddUserProfiles`, `AddUsernameChangeRequests`, `AddProfileSocialIdentityFields`, `FixProfileSocialIdentityAndUsernamePolicy`
 - [x] Unit and integration test coverage >90% for profile scope
-- [x] `docs/modules/profile/` documentation added
-- [ ] FriendsOnly visibility enforced per-friend (pending Module 3)
+- [x] `docs/modules/module-02-user-profile-social-identity/` documentation added
+- [x] FriendsOnly visibility enforced per accepted friend (Module 3 revision 1)
 - [ ] Production CloudFront delivery and deployed S3 environment verification (pending deployment)
 
 Status: **Complete** for local/backend/frontend Module 2 scope. Production CloudFront delivery and deployed environment verification remain planned.
 
 ### Module 3: Friends & Social Graph
+
+> Product behavior is authoritative in `../docs/module-requirements/module-03-friends-social-graph.md`;
+> this roadmap records status only.
 
 Purpose:
 - Make friends, friend requests, suggestions, blocking, and friend-related
@@ -230,30 +264,81 @@ Current UI target:
 - `/settings` -> Privacy -> friend request controls and block list
 
 Included features:
-- [ ] Friend list
-- [ ] Search friends
-- [ ] Send, accept, decline, cancel friend requests
-- [ ] Remove friend
-- [ ] Suggested players
-- [ ] Mutual friends count
-- [ ] Block/unblock users
-- [ ] Friend request privacy: anyone, friends-of-friends, off
-- [ ] Friend count surfaced on profile
+- [x] Friend list (keyset-paged)
+- [x] Search friends
+- [x] Send, accept, decline, cancel friend requests (incl. cross-send auto-accept and cooldowns)
+- [x] Remove friend
+- [x] Suggested players
+- [x] Mutual friends count
+- [x] Block/unblock users
+- [x] Friend request privacy: anyone, friends-of-friends, off
+- [x] Friend count surfaced on profile
+- [x] Safe exact-username discovery (Add Friend flow)
+- [x] Canonical `/u/{username}` profile route; UUID/username/`me` ambiguity resolved (non-owner legacy ids
+      show an honest "moved" state — no backend UUID→username lookup endpoint exists)
+- [x] Authenticated bounded people search by username/display-name prefix
+- [x] Profile navigation from every friend/request/suggestion/discovery/dashboard identity
+- [x] Server-derived relationship state and Add/Cancel/Accept/Decline/Remove/Block/Share profile actions
+- [x] Privacy-aware profile Friends and Mutual Friends drill-down with visible counts and keyset pagination
+- [x] Independent profile, search, friend-request, and friends-list visibility controls
+- [x] Composed topbar search shell: People now, Games/Public Lobbies explicitly labelled unavailable (M4/M6)
+- [x] Truthful unavailable states instead of fake profile presence/ELO/history/achievements/favorites
 
 Backend/database/API work:
-- [ ] Persist friendships and blocks
-- [ ] Friends controller, service, repository, DTOs, validators
-- [ ] Enforce block rules across friend requests, invites, chat, and visibility
+- [x] Persist friendships, blocks, settings, suggestion dismissals, and a transactional integration-event
+      outbox
+- [x] Friends controller, service, repository, DTOs, validators (16 endpoints)
+- [x] Enforce block rules across friend requests and visibility (chat/invites enforcement is out of scope
+      until Modules 6/7 add those surfaces)
+- [x] Real-PostgreSQL verification of expression uniqueness, `xmin` concurrency, CHECK/cascade, and migration
+      backfill
+- [x] People search, viewer-context, and friends/mutual-friends drill-down endpoints (5 new/changed
+      revision-2 endpoints), independent search/friends-list visibility + `PrivacyPolicyVersion`, retired
+      usernames, durable send caps — verified on real PostgreSQL (321 unit + 224 integration, 0 failed)
 
 Frontend work:
-- [ ] Wire `/friends` tabs and actions to API
-- [ ] Replace mock friend counts, pending requests, and suggestions
-- [ ] Keep presence/activity text mock until Module 7 and Module 11
+- [x] Wire `/friends` tabs and actions to API
+- [x] Replace mock friend counts, pending requests, and suggestions
+- [x] Replace fake presence/activity/profile progression with honest unavailable states (deferred to
+      M7/M10/M11 as documented placeholders, not silently faked)
+- [x] Composed people search (`PeopleSearchCombobox`, `/search`), canonical profile page, shared
+      `PlayerIdentity` component, friends/mutual-friends drill-down pages — 188 Vitest tests, DRIFT=0
+
+Revision-1 verification (historical; superseded in scope by revision-2 evidence below):
+- [x] Backend: xUnit 273 unit + 187 integration (incl. 18 real-Postgres tests), 0 failed, 0 skipped
+- [x] Security review (`--security=asvs-lite`): no Critical/High production findings
+- [x] Frontend: Vitest 96/0 across 7 reconciled suites, `check-contract-drift.mjs` DRIFT=0
+- [x] Module E2E (Playwright, live local stack, two users): 1/1 passed
+- [x] Revision-1 production review and final evidence
+
+Revision-2 verification:
+- [x] Backend: xUnit 321 unit + 224 integration (incl. real-Postgres migration/concurrency tests), 0 failed,
+      0 skipped
+- [x] Security review (`--security=asvs-lite`): no Critical/High findings; M03-008/M03-009/M03-011 fixed and
+      M03-010 resolved by product decision, all independently re-verified 2026-07-10
+- [x] Frontend: Vitest 188/0 across all reconciled suites, `check-contract-drift.mjs` DRIFT=0
+- [x] Module E2E: the expanded A/B/C/anonymous Playwright scenario (`module-03-friends.spec.ts`) executed
+      against a live seeded local stack and **passed** (1/1, 25.7s, 2026-07-10) — proving composed search,
+      request send/accept, authorized paginated friends drill-down (20→25 rows across the cursor boundary,
+      no duplicates), live friends-list-visibility enforcement, anonymous Public/Private profile split,
+      `/profile/me` canonical resolution, and block convergence across search/profile/friends-list/
+      mutual-friends. Two real product bugs were found and fixed during this run: a `Cursor.cs` pagination
+      defect and a `ProtectedRoute`/route-group gap blocking anonymous access to `Public` profiles (now a
+      dedicated `(public)` route group) — see `testing-report.md`.
+- [ ] Production review and final evidence sign-off for the full revision-2 scope
 
 Status:
-- UI only, with partial backend domain stubs.
+- Revision 1 is complete and green (see `docs/modules/module-03-friends-social-graph/`, the security audit,
+  and historical final evidence); M03-006 and M03-007 were fixed on 2026-07-06.
+- Revision 2 backend (Steps 2A/2B), frontend (Steps 4A/4B), and live E2E verification are implemented and
+  independently verified, including a follow-up security fix pass verified 2026-07-10 (see `docs/security/
+  audits/module-03-friends-social-graph.md`). **Module 3 is not yet declared complete**: production review
+  and final evidence sign-off remain outstanding. Next action: `/simple production-review module=3`. Module 4
+  must not begin until revision-2 canonical evidence (including production review) passes.
 
 ### Module 4: Game Library & Discovery
+
+> Product behavior is authoritative in `../docs/module-requirements/module-04-game-library-discovery.md`.
 
 Purpose:
 - Make the game library and game detail pages real before building matchmaking
@@ -274,7 +359,7 @@ Included features:
 - [ ] Supported modes: solo, AI, multiplayer, ranked
 - [ ] Active/disabled game state
 - [ ] Featured/spotlight game
-- [ ] Favorite games or played games if kept in profile UI
+- [ ] Favorite games, with lifecycle and concurrency behavior defined by the module brief
 
 Backend/database/API work:
 - [ ] Games controller, service, repository or static catalog provider
@@ -291,6 +376,10 @@ Status:
 
 ### Module 5: Game Hosting Architecture
 
+> Product behavior and ownership boundaries are authoritative in
+> `../docs/module-requirements/module-05-game-hosting-architecture.md`; Module 5 owns engine contracts,
+> serialization, and registry behavior, while Module 8 owns persisted match sessions.
+
 Purpose:
 - Define how games plug into the platform without hard-coding each game directly
   into the app shell.
@@ -298,14 +387,14 @@ Purpose:
 Included features:
 - [ ] `IGameEngine` registration pattern
 - [ ] Game state serializer pattern
-- [ ] Generic game session lifecycle
+- [ ] Generic deterministic engine state/command/view contracts
 - [ ] Server-authoritative move validation contract
-- [ ] Hooks for stats and result recording
+- [ ] Versioned terminal-result handoff contract; Module 10 owns rating/stats calculations
 
 Backend/database/API work:
 - [ ] Complete game engine registry/service
-- [ ] Define game session persistence strategy
-- [ ] Add tests for engine lookup and lifecycle behavior
+- [ ] Define engine-state serialization; persisted match/session ownership remains Module 8
+- [ ] Add tests for engine lookup, deterministic commands, serialization, views, and terminal results
 
 Frontend work:
 - [ ] No major new UI required yet
@@ -315,6 +404,8 @@ Status:
 - Planned, with backend architecture stubs.
 
 ### Module 6: Lobby & Matchmaking System
+
+> Product behavior is authoritative in `../docs/module-requirements/module-06-lobby-matchmaking-system.md`.
 
 Purpose:
 - Make the create-lobby modal and lobby page real.
@@ -337,7 +428,7 @@ Included features:
 - [ ] Lobby settings: game, time control, ranked/casual, region, spectators
 - [ ] AI fill toggle as a setup option, with actual AI behavior deferred to
       Module 9
-- [ ] Quick match queue only if needed after basic lobbies work
+- [ ] Required same-region Quick Match queue with deterministic widening per-game rating bands
 
 Backend/database/API work:
 - [ ] Persist lobbies and lobby slots
@@ -354,6 +445,8 @@ Status:
 
 ### Module 7: Real-Time Presence, Lobby Updates & Chat
 
+> Product behavior is authoritative in `../docs/module-requirements/module-07-realtime-presence-chat.md`.
+
 Purpose:
 - Make online status, lobby updates, and chat live.
 
@@ -368,12 +461,12 @@ Included features:
 - [ ] Lobby live updates over SignalR
 - [ ] Lobby chat
 - [ ] Match chat
-- [ ] Message history if needed
+- [ ] Persistent lobby chat with 30-day retention and authorized cursor history
 - [ ] Basic abuse controls: length limits, rate limits, delete/flag hooks
 
 Backend/database/API work:
 - [ ] SignalR hubs for presence, lobby updates, and chat
-- [ ] Chat persistence if history is kept
+- [ ] Chat persistence, retention, moderation evidence handoff, and reconnect snapshot convergence
 - [ ] Authenticated hub connections
 
 Frontend work:
@@ -384,6 +477,8 @@ Status:
 - UI only, with backend notifier/chat stubs.
 
 ### Module 8: Generic Match Room & Match State
+
+> Product behavior is authoritative in `../docs/module-requirements/module-08-generic-match-room-state.md`.
 
 Purpose:
 - Make `/room/[matchId]` represent a real server-authoritative match.
@@ -397,7 +492,7 @@ Included features:
 - [ ] Match/session entity
 - [ ] Match participants
 - [ ] Get current match state
-- [ ] Submit move endpoint or hub action
+- [ ] One authoritative move-command service used by REST/realtime/AI adapters
 - [ ] Turn validation
 - [ ] Pause/resume
 - [ ] Forfeit
@@ -418,6 +513,10 @@ Status:
 - UI only, with backend session stubs.
 
 ### Module 9: Solo vs AI Platform Flow
+
+> Product behavior is authoritative in `../docs/module-requirements/module-09-solo-vs-ai-flow.md`.
+> Phase 1 validates the AI platform against the internal reference engine; catalog entry points remain
+> capability-disabled until a production game supplies an AI strategy.
 
 Purpose:
 - Make Play vs AI, AI difficulty, and AI-filled seats work.
@@ -449,6 +548,8 @@ Status:
 
 ### Module 10: Stats, Achievements & Leaderboards
 
+> Product behavior is authoritative in `../docs/module-requirements/module-10-stats-achievements-leaderboards.md`.
+
 Purpose:
 - Make dashboard/profile/game/leaderboard stats real.
 
@@ -461,15 +562,15 @@ Current UI target:
 
 Included features:
 - [ ] Per-game stats
-- [ ] Global/user ELO
+- [ ] Per-game Elo as the sole rating authority, with an explicit migration from legacy global `User.Elo`
 - [ ] Match history
 - [ ] Win rate, streaks, best season
 - [ ] Achievement definitions
 - [ ] User achievement unlock/progress
-- [ ] Global leaderboards
+- [ ] Global-within-selected-game leaderboards
 - [ ] Friends leaderboards
 - [ ] Season/tier display
-- [ ] Daily quests only if kept simple and tied to real events
+- [ ] Three server-generated daily quests from versioned definitions tied to real events
 
 Backend/database/API work:
 - [ ] Stats service
@@ -486,6 +587,8 @@ Status:
 - UI only.
 
 ### Module 11: Notifications & Activity Feed
+
+> Product behavior is authoritative in `../docs/module-requirements/module-11-notifications-activity-feed.md`.
 
 Purpose:
 - Make the topbar notification bell, unread counts, preferences, and activity
@@ -505,7 +608,7 @@ Included features:
 - [ ] Notification triggers for friend requests, lobby invites, match results,
       achievements, and system/season messages
 - [ ] Notification preferences
-- [ ] Friend activity feed if kept after Modules 3, 8, and 10 provide events
+- [ ] Privacy-filtered friend activity feed from the brief's allow-listed real events
 
 Backend/database/API work:
 - [ ] Notifications controller, service, repository, DTOs
@@ -521,6 +624,8 @@ Status:
 
 ### Module 12: Moderation & Admin Dashboard
 
+> Product behavior is authoritative in `../docs/module-requirements/module-12-moderation-admin-dashboard.md`.
+
 Purpose:
 - Support basic safety and admin review without adding unrelated enterprise
   features.
@@ -530,7 +635,7 @@ Included features:
 - [ ] Suspend/ban users
 - [ ] Review flagged chat/profile content
 - [ ] Admin action audit log
-- [ ] Simple admin metrics only if useful
+- [ ] Bounded operational moderation metrics defined by the module brief
 
 Backend/database/API work:
 - [ ] Admin/moderation controller and service
@@ -545,6 +650,8 @@ Status:
 
 ### Module 13: Premium / Subscription System
 
+> Product behavior is authoritative in `../docs/module-requirements/module-13-premium-subscription-system.md`.
+
 Purpose:
 - Support account tiers only after the core social gaming flow works.
 
@@ -552,7 +659,7 @@ Included features:
 - [ ] Display account tier if present
 - [ ] Subscription plans
 - [ ] Payment-provider abstraction
-- [ ] Stripe or similar checkout integration
+- [ ] Stripe sandbox hosted Checkout and Customer Portal behind `IPaymentProvider`
 - [ ] Webhook handling
 - [ ] Subscription status enforcement
 
@@ -565,9 +672,13 @@ Frontend work:
 - [ ] Billing/settings UI only when backend billing is real
 
 Status:
-- Planned; backend has `SubscriptionTier` enum only.
+- Planned; the existing `Free|Plus|Pro` enum is legacy compatibility input. Module 13 introduces the
+  authoritative Free/Premium Supporter entitlement model and a documented additive migration.
 
 ### Module 14: Security, Testing & Production Readiness
+
+> Product behavior and evidence levels are authoritative in
+> `../docs/module-requirements/module-14-security-testing-production-readiness.md`.
 
 Purpose:
 - Keep every implemented module reviewable and honest.
@@ -613,15 +724,45 @@ Frontend work:
 Status:
 - Planned, not visible in current UI.
 
+### Module 16: Trust, Legal & Compliance Surfaces
+
+> Product behavior is authoritative in
+> `../docs/module-requirements/module-16-trust-legal-compliance-surfaces.md`.
+
+Purpose:
+- Give every user a reachable Terms/Privacy/cookie-consent, accessibility statement, help/changelog, and
+  self-service "download my data" export surface — added 2026-07-06 as the last Phase 1 module, since no
+  other module owned this and Module 14 explicitly excludes new product UI.
+
+Included features:
+- [ ] Terms of Service / Privacy Policy / cookie-consent pages and versioned consent recording
+- [ ] Public accessibility statement page
+- [ ] Help/FAQ and changelog pages
+- [ ] Consolidated self-service data-export request/download flow
+- [ ] Settings links to cookie preferences and to Module 1's existing account deletion
+
+Backend/database/API work:
+- [ ] `UserConsent` and `DataExportRequest` tables and endpoints
+- [ ] Export aggregation job across Modules 2/3/10/11/13's existing per-module export data
+
+Frontend work:
+- [ ] Public legal/help/changelog/accessibility routes with sitewide footer links
+- [ ] Cookie-consent banner and Settings export/consent controls
+
+Status:
+- Planned, not visible in current UI. See `docs/ai-workflow/module-registry.md` for the explicitly
+  out-of-scope list (2FA/MFA, non-Google OAuth, tournaments, clans/guilds, referral program, guest play)
+  closed out during the same 2026-07-06 gap-closure pass.
+
 ---
 
 ## Later Docs To Update
 
-- `docs/modules/README.md` should list Module 2 once profile work begins.
-- `docs/security/audits/module-02-user-profile-social-identity.md` should be
-  updated to say profile mock UI exists but backend/API work is not implemented.
-- `docs/reviewer-notes.md` should stay honest about which modules are wired and
-  which are still mock UI.
+- Keep `docs/reviewer-notes.md` synchronized after each completed module.
+- Add or update module docs and security audit notes from current evidence only;
+  do not copy stale status from previous modules.
+- Keep deployment caveats until production database, storage, CloudFront, CI/CD,
+  and environment verification evidence exists.
 
 ---
 
@@ -629,10 +770,10 @@ Status:
 
 After Phase 1 is complete, games are added as plugins:
 
-- [ ] Wordle with friends
+- [ ] Five-Letter Duel
 - [ ] Online Sudoku
-- [ ] Connect Four
-- [ ] Tetris Arena
+- [ ] Four in a Row
+- [ ] Falling Blocks Arena
 - [ ] Chess Lite
 - [ ] Checkers
 - [ ] Memory Grid

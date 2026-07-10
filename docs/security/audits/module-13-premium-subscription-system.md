@@ -1,4 +1,4 @@
-# Module 13: Premium & Subscriptions — Security Audit
+# Module 13: Premium Subscription System — Security Audit
 
 ## Status
 

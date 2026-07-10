@@ -1,4 +1,4 @@
-# Module 12: Moderation & Admin — Security Audit
+# Module 12: Moderation & Admin Dashboard — Security Audit
 
 ## Status
 
