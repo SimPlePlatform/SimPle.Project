@@ -2,7 +2,7 @@
 
 ## Test Strategy
 Backend logic is covered by xUnit unit + integration tests (against an in-memory host via
-`TestWebApplicationFactory`); frontend auth pages by Vitest + type/lint/build checks. Date: 2026-05-28.
+`TestWebApplicationFactory`); frontend auth pages by Vitest + type/lint/build checks.
 
 ## Coverage Target
 90%+ meaningful module coverage (advisory).

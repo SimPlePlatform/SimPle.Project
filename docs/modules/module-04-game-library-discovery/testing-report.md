@@ -9,8 +9,8 @@ integration tests, and a real-PostgreSQL suite run against disposable scratch ro
 (`module-04-game-library.spec.ts`) was written during the frontend slice and **executed against a live
 local stack (real backend :5147 + frontend :3000 + real Postgres) and passed (2/2, 9.1s)** at the
 verification stage, which was also the first module run to enforce `accessibilityPolicy: "required"`.
-Dates: 2026-07-10 (all backend, security, frontend, and verification work for this module happened in a
-single day).
+All backend, security, frontend, and verification work for this module was completed in a single
+continuous session.
 
 ## Coverage Target
 
@@ -29,7 +29,7 @@ unaffected/regression-checked). A statement/branch coverage percentage was not c
 ## Commands Run
 
 ```bash
-# Backend (2026-07-10, 4A/4B sessions)
+# Backend (4A/4B sessions)
 dotnet build SimPle.sln
 dotnet test tests/SimPle.UnitTests                          # Games domain/seeder unit tests, 36/36 (4A)
 dotnet test tests/SimPle.IntegrationTests                    # real Postgres (m4_test_runner, dropped), 13/13 (4A)
@@ -42,7 +42,7 @@ dotnet test                                                  # real Postgres (mo
                                                                # FriendsPostgresConcurrencyTests 11/11 (4B)
 dotnet build SimPle.sln --nologo -v:q                         # security-review session, catch-up confirmation
 
-# Frontend (2026-07-10)
+# Frontend
 cd SimpLe.Frontend
 npx tsc --noEmit                        # clean
 npm run lint                            # clean (after 4 react-hooks/set-state-in-effect eslint-disable fixes,
@@ -50,7 +50,7 @@ npm run lint                            # clean (after 4 react-hooks/set-state-i
 npm run test                            # vitest run, 223/223
 node scripts/check-contract-drift.mjs   # DRIFT=0 (64 backend routes, 52 resolved frontend calls)
 
-# Live E2E + accessibility verification (2026-07-10, run-2026-07-10T16-01-37-336Z-...)
+# Live E2E + accessibility verification (run-2026-07-10T16-01-37-336Z-...)
 npm run test:e2e -- tests/e2e/module-04-game-library.spec.ts   # live backend+frontend+real Postgres, 2 passed, 9.1s
 npm run test:e2e -- tests/e2e/smoke.spec.ts                    # shared app-shell regression re-check, 2 passed, 4.0s
 node scripts/check-contract-drift.mjs                           # re-run, DRIFT=0 (64/52)

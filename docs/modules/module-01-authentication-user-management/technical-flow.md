@@ -1,6 +1,6 @@
 # Technical Flow - Module 01: Authentication & User Management
 
-## Recruiter-Facing Summary
+## Summary
 
 Authentication is SimPle's foundation: it gives every later feature (friends, lobbies, chat, games) a
 trustworthy answer to "which user is making this request?" It implements cookie-based JWT auth with a
