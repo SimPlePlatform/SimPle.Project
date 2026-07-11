@@ -143,15 +143,15 @@ is **merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`.
 | Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack |
 | Revision 2: production review and final evidence sign-off | Done - merged to `main` |
 
-### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Production Review Pending
+### Module 4: Game Library & Discovery - Complete, Merged to Main
 
-Backend, both security review phases, frontend, and live E2E/accessibility verification are complete and
-independently verified. Module 4 is also the first module whose `module-e2e-manifest.json` entry sets
-`accessibilityPolicy: "required"`; the required axe-core scan surfaced 6 real accessibility defects in shared
-app-shell code (not Module 4 code), which were fixed with explicit user sign-off before the scan went clean.
-Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is complete — see
-`docs/modules/module-04-game-library-discovery/`. The module is **not yet complete**: production review and
-final evidence sign-off are still outstanding.
+Backend, both security review phases, frontend, live E2E/accessibility verification, production review, and
+final evidence sign-off are all complete and independently verified. Module 4 is also the first module whose
+`module-e2e-manifest.json` entry sets `accessibilityPolicy: "required"`; the required axe-core scan surfaced 6
+real accessibility defects in shared app-shell code (not Module 4 code), which were fixed with explicit user
+sign-off before the scan went clean. Documentation (`api-reference.md`, `technical-flow.md`,
+`testing-report.md`) is complete — see `docs/modules/module-04-game-library-discovery/`. **Module 4 is
+complete and merged to `main`** in all three repos (`SimPLe.Backend`, `SimpLe.Frontend`, `SimPle.Project`).
 
 | Area | Status |
 |---|---|
@@ -166,9 +166,36 @@ final evidence sign-off are still outstanding.
 | Verification: Playwright E2E against a live local stack | Done - 2/2 passed |
 | Verification: First module to enforce `accessibilityPolicy: "required"`; 6 axe violations fixed in shared app shell | Done - zero violations after fix |
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
+| Production review and final evidence sign-off | Done - merged to `main` |
+
+### Module 5: Game Hosting Architecture - Backend Verified, Production Review Pending
+
+Module 5 is backend-only and deliberately pure/in-memory: it replaces three orphaned, unimplemented
+game-host stub files with a typed `IGameDefinition<TState,TCommand,TPlayerView>` plugin contract, a
+non-generic host adapter, a `TryResolve(slug, engineVersion)` registry, an allow-listed `System.Text.Json`
+codec with a checksummed byte envelope, a `PCG32-v1` deterministic RNG, a size/budget/redaction invoker
+boundary, and a catalog/engine compatibility validator. It adds no EF entity/migration, no public route, and
+no frontend code — Module 4's game-library UI is untouched. Backend implementation, `--security=asvs-lite`
+review, and targeted verification (including a two-process golden-vector determinism proof) are complete and
+independently verified. Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is
+complete — see `docs/modules/module-05-game-hosting-architecture/`. The module is **not yet complete**:
+production review and final evidence sign-off are still outstanding.
+
+| Area | Status |
+|---|---|
+| Backend: typed `IGameDefinition` contract, envelopes, `PCG32-v1` RNG, allow-listed codec, registry, invoker, catalog-compatibility validator | Done |
+| Backend: legacy stub disposition (`IGameEngine`/`GameSession` deleted, `IGameRegistry` rewritten to `TryResolve`) | Done |
+| Backend: startup fail-fast on duplicate `(slug, engineVersion)` or catalog mismatch; zero product engines is a valid Phase 1 state | Done |
+| Backend: 177 unit + 12 integration `GameHost`-filtered tests | Done - 189/189 passed |
+| Backend: no-EF-model/migration-delta proof | Done - zero GameHost entity/DbSet/migration |
+| Security: `--security=asvs-lite` review | Done - zero unwaived Critical/High/Medium; 1 Low + 2 Info deferred |
+| Verification: two-process golden-vector SHA-256 determinism proof (10 vectors) | Done - byte-identical across both runs |
+| Verification: Stopwatch benchmark (10,000-command reference workload) | Done - p95 0.0293 ms vs. < 25 ms budget |
+| Verification: `check-contract-drift.mjs` (no new route/frontend surface) | Done - DRIFT=0 |
+| Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
 | Production review and final evidence sign-off | Pending |
 
-### Modules 5-14, 16: Planned; Module 15 Future
+### Modules 6-14, 16: Planned; Module 15 Future
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -361,7 +388,7 @@ Status:
   complete and merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`
   (`docs/ai-workflow/evidence/module-03-friends-social-graph/revision-2/final.json`).
 
-### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Production Review Pending
+### Module 4: Game Library & Discovery - Complete, Merged to Main
 
 > Product behavior is authoritative in `../docs/module-requirements/module-04-game-library-discovery.md`.
 
@@ -406,13 +433,13 @@ Verification:
 - [x] Module E2E (Playwright, live local stack): `module-04-game-library.spec.ts` 2/2 passed; also the first
       module to enforce `accessibilityPolicy: "required"` — 6 real axe-core violations were found and fixed
       in shared app-shell code (with explicit user sign-off), after which the scan is clean
-- [ ] Production review and final evidence sign-off (next)
+- [x] Production review and final evidence sign-off
 
 Status:
-- Backend, security (both phases), frontend, live E2E/accessibility verification, and documentation
-  (`api-reference.md`, `technical-flow.md`, `testing-report.md`) are complete
-  (see `docs/modules/module-04-game-library-discovery/`). Production review and final evidence sign-off
-  remain before Module 4 is declared complete.
+- Backend, security (both phases), frontend, live E2E/accessibility verification, documentation
+  (`api-reference.md`, `technical-flow.md`, `testing-report.md`), production review, and final evidence
+  sign-off are all complete (see `docs/modules/module-04-game-library-discovery/`). **Module 4 is complete
+  and merged to `main`** in all three repos (`SimPLe.Backend`, `SimpLe.Frontend`, `SimPle.Project`).
 
 ### Module 5: Game Hosting Architecture
 
@@ -425,23 +452,48 @@ Purpose:
   into the app shell.
 
 Included features:
-- [ ] `IGameEngine` registration pattern
-- [ ] Game state serializer pattern
-- [ ] Generic deterministic engine state/command/view contracts
-- [ ] Server-authoritative move validation contract
-- [ ] Versioned terminal-result handoff contract; Module 10 owns rating/stats calculations
+- [x] Typed `IGameDefinition<TState,TCommand,TPlayerView>` registration pattern (immutable `(slug,
+      engineVersion)` key; explicit `TryResolve`, no latest-version fallback)
+- [x] Allow-listed `System.Text.Json` state/command/view codec with a checksummed byte envelope
+- [x] Generic deterministic engine state/command/view contracts (`GameStateEnvelope`,
+      `GameCommandEnvelope`, `PlayerViewEnvelope`, `EngineTransition`)
+- [x] Server-authoritative move-validation contract (`ApplyCommand` returns a typed rejection with no
+      partial mutation; client-supplied actor/seat data is never trusted by Module 5's own code)
+- [x] Versioned terminal-result handoff contract (`EvaluateResult`/`TerminalResultCandidate`); Module 10
+      owns rating/stats calculations
+- [x] `PCG32-v1` deterministic RNG seeded from one server-chosen 128-bit match seed
 
 Backend/database/API work:
-- [ ] Complete game engine registry/service
-- [ ] Define engine-state serialization; persisted match/session ownership remains Module 8
-- [ ] Add tests for engine lookup, deterministic commands, serialization, views, and terminal results
+- [x] Game engine registry/service (`GameRegistry`, `HostedGameDefinition` adapter, `GameHostInvoker`)
+- [x] Engine-state serialization (`GameHostJsonContext`); persisted match/session ownership remains Module 8
+- [x] Legacy stub disposition: `IGameEngine`/`GameSession` deleted, `IGameRegistry` rewritten to
+      `TryResolve(slug, engineVersion)`
+- [x] `CatalogEngineCompatibilityValidator` reconciling registered engines against Module 4's catalog;
+      startup fails fast on a mismatch or duplicate key
+- [x] 177 unit + 12 integration tests for engine lookup, deterministic commands, serialization, views, and
+      terminal results, plus a `HiddenTokenDraft` test-only reference engine and 10 golden vectors
+- [x] No EF entity, table, or migration — proven by `GameHostNoEfDeltaTests`, not merely asserted
 
 Frontend work:
-- [ ] No major new UI required yet
-- [ ] Existing room UI stays mock until Module 8
+- [x] No new UI required — none built; Module 4's game-library UI is unchanged
+- [x] Existing room UI stays mock until Module 8
+
+Verification:
+- [x] Backend: 189/189 `GameHost`-filtered tests (177 unit + 12 integration), 0 failed
+- [x] Security review (`--security=asvs-lite`): zero unwaived Critical/High/Medium findings; 1 Low + 2 Info
+      recorded and deferred
+- [x] Two-process golden-vector SHA-256 determinism proof: byte-identical across all 10 vectors
+- [x] Stopwatch benchmark (10,000-command reference workload): p95 = 0.0293 ms (budget < 25 ms), max
+      single-command latency = 12.1803 ms (soft budget <= 100 ms)
+- [x] `check-contract-drift.mjs`: DRIFT=0, confirming no new route or frontend call
+- [x] Browser E2E: `not_applicable` (no browser surface); the two-process `GameHost`-filtered test run is
+      the manifest-mandated substitute
+- [ ] Production review and final evidence sign-off (next)
 
 Status:
-- Planned, with backend architecture stubs.
+- Backend, security review, and targeted verification are complete and independently verified
+  (see `docs/modules/module-05-game-hosting-architecture/`). Production review and final evidence sign-off
+  remain before Module 5 is declared complete.
 
 ### Module 6: Lobby & Matchmaking System
 
