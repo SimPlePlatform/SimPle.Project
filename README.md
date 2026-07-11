@@ -143,7 +143,32 @@ is **merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`.
 | Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack, 2026-07-10 |
 | Revision 2: production review and final evidence sign-off | Done - merged to `main`, 2026-07-10 |
 
-### Modules 4-14, 16: Planned; Module 15 Future
+### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Production Review Pending
+
+Backend, both security review phases, frontend, and live E2E/accessibility verification are complete and
+independently verified. Module 4 is also the first module whose `module-e2e-manifest.json` entry sets
+`accessibilityPolicy: "required"`; the required axe-core scan surfaced 6 real accessibility defects in shared
+app-shell code (not Module 4 code), which were fixed with explicit user sign-off before the scan went clean.
+Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is complete — see
+`docs/modules/module-04-game-library-discovery/`. The module is **not yet complete**: production review and
+final evidence sign-off are still outstanding.
+
+| Area | Status |
+|---|---|
+| Backend: 6 `/api/games` endpoints (catalog list/detail/featured, favorites list/PUT/DELETE) | Done |
+| Backend: `Game`/`GameTag`/`GameModeCapability`/`UserFavoriteGame`/`CatalogSeedHistory` domain + migrations | Done - verified on real PostgreSQL |
+| Backend: Advisory-lock + checksum-idempotent catalog seeder (8 canonical games) | Done |
+| Backend: Query-shape-bound keyset cursor, ETag/304 revalidation, lifecycle state machine | Done |
+| Backend: 412 unit + 219 integration tests (incl. 32 real-Postgres tests) | Done - 0 failed |
+| Security: `--security=light` backend-phase and post-frontend-phase review | Done - zero unwaived Critical/High/Medium; 2 Low + 4 Info deferred |
+| Frontend: `/games`, detail, dashboard, search, and profile favorites wired to real API | Done |
+| Frontend: 223 Vitest tests; `check-contract-drift.mjs` DRIFT=0 | Done |
+| Verification: Playwright E2E against a live local stack | Done - 2/2 passed |
+| Verification: First module to enforce `accessibilityPolicy: "required"`; 6 axe violations fixed in shared app shell | Done - zero violations after fix, 2026-07-10 |
+| Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
+| Production review and final evidence sign-off | Pending |
+
+### Modules 5-14, 16: Planned; Module 15 Future
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -336,7 +361,7 @@ Status:
   complete and merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`
   (`docs/ai-workflow/evidence/module-03-friends-social-graph/revision-2/final.json`).
 
-### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Docs In Progress
+### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Production Review Pending
 
 > Product behavior is authoritative in `../docs/module-requirements/module-04-game-library-discovery.md`.
 
@@ -384,9 +409,10 @@ Verification:
 - [ ] Production review and final evidence sign-off (next)
 
 Status:
-- Backend, security (both phases), frontend, and live E2E/accessibility verification are complete
-  (see `docs/modules/module-04-game-library-discovery/`). Documentation is in progress; production review
-  and final evidence sign-off remain before Module 4 is declared complete.
+- Backend, security (both phases), frontend, live E2E/accessibility verification, and documentation
+  (`api-reference.md`, `technical-flow.md`, `testing-report.md`) are complete
+  (see `docs/modules/module-04-game-library-discovery/`). Production review and final evidence sign-off
+  remain before Module 4 is declared complete.
 
 ### Module 5: Game Hosting Architecture
 
