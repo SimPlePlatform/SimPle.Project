@@ -123,7 +123,7 @@ Catalog mutation has no public controller at all; the checked-in seed manifest a
 - Backend/API/Swagger alignment: `GamesController.cs:101-118`.
 - Frontend/API integration alignment: `gamesApi.getFavorites()`.
 - Example request: `GET /api/games/me/favorites?limit=24`
-- Example response: `{ "items": [ { "slug": "chess-lite", "name": "Chess Lite", "favoritedAt": "2026-07-10T12:00:00Z", ... } ], "nextCursor": null }`
+- Example response: `{ "items": [ { "slug": "chess-lite", "name": "Chess Lite", "favoritedAt": "<ISO-8601 timestamp>", ... } ], "nextCursor": null }`
 
 ### PUT /api/games/me/favorites/{slug}
 - Purpose: favorite a game.
@@ -143,7 +143,7 @@ Catalog mutation has no public controller at all; the checked-in seed manifest a
 - Frontend/API integration alignment: `gamesApi.favorite(slug)` via the shared `apiFetch<T>()`, which attaches
   the CSRF header automatically.
 - Example request: `PUT /api/games/me/favorites/chess-lite`
-- Example response: `{ "slug": "chess-lite", "name": "Chess Lite", "lifecycle": "ComingSoon", "favoritedAt": "2026-07-10T12:00:00Z", ... }`
+- Example response: `{ "slug": "chess-lite", "name": "Chess Lite", "lifecycle": "ComingSoon", "favoritedAt": "<ISO-8601 timestamp>", ... }`
 
 ### DELETE /api/games/me/favorites/{slug}
 - Purpose: unfavorite a game.
@@ -236,7 +236,7 @@ a live local stack with the shared axe accessibility fixture (zero violations). 
 `testing-report.md`.
 
 ## Last Verified Command
-Backend: `dotnet build SimPle.sln` (0 errors, 0 warnings) — 2026-07-10. Frontend: `npx tsc --noEmit`,
-`npm run lint`, `npm run test` (223/223), `node scripts/check-contract-drift.mjs` (`DRIFT=0`) — 2026-07-10.
+Backend: `dotnet build SimPle.sln` (0 errors, 0 warnings). Frontend: `npx tsc --noEmit`,
+`npm run lint`, `npm run test` (223/223), `node scripts/check-contract-drift.mjs` (`DRIFT=0`).
 Live E2E: `npm run test:e2e -- tests/e2e/module-04-game-library.spec.ts` against local backend `:5147` +
-frontend `:3000` + real PostgreSQL — 2 passed, 9.1s — 2026-07-10.
+frontend `:3000` + real PostgreSQL — 2 passed, 9.1s.

@@ -112,7 +112,7 @@ product data lives in `src/mock/`.
 
 ### Module 3: Friends & Social Graph - Revision 2 Complete, Merged to Main
 
-The 2026-07-06 revision-1 backend/security/frontend/E2E evidence remains valid for the narrower friendship
+The original revision-1 backend/security/frontend/E2E evidence remains valid for the narrower friendship
 contract. A later product-journey audit found that global people search, canonical profile routing, identity
 links, relationship-aware profile actions, and privacy-aware profile/mutual friend drill-down were not in that
 contract. Module 3 was reopened before Module 4; the revision-2 backend, frontend, live E2E verification,
@@ -128,8 +128,8 @@ is **merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`.
 | Backend: Cross-send auto-accept, decline/cancel cooldowns, block atomicity, concurrency retry | Done |
 | Backend: 273 unit + 187 integration tests (incl. 18 real-Postgres concurrency/migration tests) | Done - 0 failed, 0 skipped |
 | Security: BOLA/IDOR to privacy-safe 404, timing-safe discovery, per-account rate limits | Done - `--security=asvs-lite`, no Critical/High findings |
-| Security: Audit-event logging for denials | Done - M03-006 fixed 2026-07-06 |
-| Security: Block-endpoint response minimality | Done - M03-007 fixed 2026-07-06 |
+| Security: Audit-event logging for denials | Done - M03-006 fixed |
+| Security: Block-endpoint response minimality | Done - M03-007 fixed |
 | Frontend: `/friends`, dashboard, sidebar badge, invite picker, settings privacy/blocks wired to real API | Done |
 | Frontend: 96 Vitest tests across 7 reconciled suites; contract-drift check DRIFT=0 | Done |
 | Verification: Two-user Playwright E2E against a live local stack | Done - 1/1 passed |
@@ -139,9 +139,9 @@ is **merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`.
 | Revision 2: independent search/request/friends-list visibility and abuse caps | Done |
 | Revision 2: remove fake profile presence/ELO/history/achievements/favorites | Done |
 | Revision 2: backend 321 unit + 224 integration; frontend 188 Vitest; contract-drift DRIFT=0 | Done - 0 failed |
-| Revision 2: security findings M03-008/M03-009/M03-011 fixed, M03-010 resolved (product decision) | Done - verified 2026-07-10 |
-| Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack, 2026-07-10 |
-| Revision 2: production review and final evidence sign-off | Done - merged to `main`, 2026-07-10 |
+| Revision 2: security findings M03-008/M03-009/M03-011 fixed, M03-010 resolved (product decision) | Done - independently re-verified |
+| Revision 2: expanded 3-user/anonymous navigation, privacy, and pagination Playwright | Done - 1/1 passed, 25.7s, live local stack |
+| Revision 2: production review and final evidence sign-off | Done - merged to `main` |
 
 ### Module 4: Game Library & Discovery - Backend/Frontend/E2E Verified, Production Review Pending
 
@@ -164,7 +164,7 @@ final evidence sign-off are still outstanding.
 | Frontend: `/games`, detail, dashboard, search, and profile favorites wired to real API | Done |
 | Frontend: 223 Vitest tests; `check-contract-drift.mjs` DRIFT=0 | Done |
 | Verification: Playwright E2E against a live local stack | Done - 2/2 passed |
-| Verification: First module to enforce `accessibilityPolicy: "required"`; 6 axe violations fixed in shared app shell | Done - zero violations after fix, 2026-07-10 |
+| Verification: First module to enforce `accessibilityPolicy: "required"`; 6 axe violations fixed in shared app shell | Done - zero violations after fix |
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
 | Production review and final evidence sign-off | Pending |
 
@@ -340,10 +340,10 @@ Revision-2 verification:
 - [x] Backend: xUnit 321 unit + 224 integration (incl. real-Postgres migration/concurrency tests), 0 failed,
       0 skipped
 - [x] Security review (`--security=asvs-lite`): no Critical/High findings; M03-008/M03-009/M03-011 fixed and
-      M03-010 resolved by product decision, all independently re-verified 2026-07-10
+      M03-010 resolved by product decision, all independently re-verified
 - [x] Frontend: Vitest 188/0 across all reconciled suites, `check-contract-drift.mjs` DRIFT=0
 - [x] Module E2E: the expanded A/B/C/anonymous Playwright scenario (`module-03-friends.spec.ts`) executed
-      against a live seeded local stack and **passed** (1/1, 25.7s, 2026-07-10) — proving composed search,
+      against a live seeded local stack and **passed** (1/1, 25.7s) — proving composed search,
       request send/accept, authorized paginated friends drill-down (20→25 rows across the cursor boundary,
       no duplicates), live friends-list-visibility enforcement, anonymous Public/Private profile split,
       `/profile/me` canonical resolution, and block convergence across search/profile/friends-list/
@@ -354,10 +354,10 @@ Revision-2 verification:
 
 Status:
 - Revision 1 is complete and green (see `docs/modules/module-03-friends-social-graph/`, the security audit,
-  and historical final evidence); M03-006 and M03-007 were fixed on 2026-07-06.
+  and historical final evidence); M03-006 and M03-007 were fixed in a follow-up pass.
 - Revision 2 backend (Steps 2A/2B), frontend (Steps 4A/4B), live E2E verification, production review, and
   final evidence are all implemented and independently verified, including a follow-up security fix pass
-  verified 2026-07-10 (see `docs/security/audits/module-03-friends-social-graph.md`). **Module 3 is
+  verified (see `docs/security/audits/module-03-friends-social-graph.md`). **Module 3 is
   complete and merged to `main`** in both `SimPLe.Backend` and `SimpLe.Frontend`
   (`docs/ai-workflow/evidence/module-03-friends-social-graph/revision-2/final.json`).
 
@@ -771,7 +771,7 @@ Status:
 
 Purpose:
 - Give every user a reachable Terms/Privacy/cookie-consent, accessibility statement, help/changelog, and
-  self-service "download my data" export surface — added 2026-07-06 as the last Phase 1 module, since no
+  self-service "download my data" export surface — added as the last Phase 1 module, since no
   other module owned this and Module 14 explicitly excludes new product UI.
 
 Included features:
@@ -792,7 +792,7 @@ Frontend work:
 Status:
 - Planned, not visible in current UI. See `docs/ai-workflow/module-registry.md` for the explicitly
   out-of-scope list (2FA/MFA, non-Google OAuth, tournaments, clans/guilds, referral program, guest play)
-  closed out during the same 2026-07-06 gap-closure pass.
+  closed out during the same gap-closure pass.
 
 ---
 

@@ -15,8 +15,8 @@ and a provider-real-PostgreSQL suite run against a disposable `postgres:16-alpin
 wiring is covered by Vitest (component + API-client tests). A two-user Playwright E2E spec already proved
 the revision-1 happy path on a live local stack; an expanded A/B/C/anonymous Playwright spec for revision 2
 was written, then executed and passed against a live local stack (real backend + frontend + real Postgres).
-Dates: 2026-07-09 (backend 2A/2B, frontend 4A/4B), 2026-07-10 (live E2E verification, then security-fix
-re-verification).
+Backend (2A/2B) and frontend (4A/4B) automated suites ran first, followed by live E2E verification and a
+security-fix re-verification pass.
 
 ## Coverage Target
 
@@ -34,7 +34,7 @@ reconciled suites (revision-1 + revision-2); a project-wide coverage run was not
 ## Commands Run
 
 ```bash
-# Backend (2026-07-09)
+# Backend
 dotnet build SimPle.sln
 dotnet test tests/SimPle.UnitTests/SimPle.UnitTests.csproj                              # 321/0/0
 dotnet test tests/SimPle.IntegrationTests --filter PeopleEndpointsTests|ProfileEndpointsTests  # in-memory, 70/0/0
@@ -43,21 +43,21 @@ MIGRATION_TEST_CONNECTION_STRING=... dotnet test --filter FriendsPostgresConcurr
 MIGRATION_TEST_CONNECTION_STRING=... dotnet test tests/SimPle.IntegrationTests          # real Postgres, full suite, 224/0/0, 0 skipped
 dotnet build src/SimPle.Api/SimPle.Api.csproj                                           # Swagger/OpenAPI XML-doc check
 
-# Frontend (2026-07-09)
+# Frontend
 cd SimpLe.Frontend
 npx tsc --noEmit -p tsconfig.json      # clean
 npm run lint                           # clean (incl. react-hooks/set-state-in-effect fix in PeopleSearchCombobox)
 npm run test                           # vitest run, 188/188
 node scripts/check-contract-drift.mjs  # DRIFT=0 (58 backend routes, 49 resolved frontend calls)
 
-# Live E2E verification (2026-07-10, run-2026-07-09T16-12-20-678Z-50e0bc0a-...)
+# Live E2E verification (run-2026-07-09T16-12-20-678Z-50e0bc0a-...)
 node tests/e2e/seed-b-friends.mjs                                            # one-time seed, ~8-9 min (auth-register rate limit)
 npx playwright test tests/e2e/module-03-friends.spec.ts --project=chromium  # full A/B/C/anonymous scenario, live backend :5147 + frontend :3000 + real Postgres — 1 passed, 25.7s
 node scripts/check-contract-drift.mjs                                        # re-run, DRIFT=0 (58/49)
 dotnet build SimPle.sln                                                      # after the Cursor.cs fix below
 npx tsc --noEmit -p tsconfig.json                                            # after the (public) route-group restructuring below
 
-# Security-fix verification (2026-07-10)
+# Security-fix verification
 dotnet build src/SimPle.Api/SimPle.Api.csproj
 dotnet test tests/SimPle.UnitTests --filter "FullyQualifiedName~Friends|FullyQualifiedName~People|FullyQualifiedName~Profile"  # 202/202
 npx playwright test tests/e2e/module-03-friends.spec.ts --project=chromium   # targeted live re-run against real Postgres, validating the corrected count queries only
@@ -93,11 +93,11 @@ findings. Two Medium findings (M03-008: friend/mutual visible-count privacy-filt
 paged-list queries; M03-009: a migration backfill that ignored existing users' current profile visibility)
 and two Low findings (M03-010: an intentional independent rate-limit budget split, confirmed by product
 decision; M03-011: a missing explicit cache header on the anonymous profile branch) were opened and have
-all since been **fixed (M03-008, M03-009, M03-011) or resolved (M03-010) and verified on 2026-07-10** via a
+all since been **fixed (M03-008, M03-009, M03-011) or resolved (M03-010) and verified** via a
 targeted unit re-run (202/202), a live Playwright run against real Postgres exercising the corrected
 correlated-subquery LINQ, a manual re-derivation `UPDATE` equivalent to a fresh migration apply, and a
 `curl` header check. Zero open findings above Info remain for the revision-2 delta. All revision-1 findings
-(M03-001, M03-006, M03-007) were already fixed as of 2026-07-06.
+(M03-001, M03-006, M03-007) were already fixed in the prior revision.
 
 ## Frontend Tests If Applicable
 
@@ -121,9 +121,9 @@ Not applicable — realtime deferred to Module 7.
 - Migrations added: `20260709054351_AddProfilePrivacyAndRetiredUsernames`,
   `20260709094629_AddPeopleSearchAndSendCap`.
 - Migration safety notes: both forward-only/additive, verified on real PostgreSQL 16
-  (`FriendsMigrationSmokeTests.cs`, `ProfilePrivacyMigrationSmokeTests.cs`, 2026-07-09). The
-  `SearchVisibility` backfill defect found by the 2026-07-09 security review (M03-009) was corrected and
-  re-verified 2026-07-10 via a manual re-derivation `UPDATE` against local dev Postgres equivalent to a
+  (`FriendsMigrationSmokeTests.cs`, `ProfilePrivacyMigrationSmokeTests.cs`). The
+  `SearchVisibility` backfill defect found by the security review (M03-009) was corrected and
+  re-verified via a manual re-derivation `UPDATE` against local dev Postgres equivalent to a
   fresh migration apply; a from-scratch migration run re-exercising the corrected `Up()` end-to-end was not
   performed this pass (see the security audit's residual-risk note).
 - Data preservation notes: no existing data altered destructively.
@@ -158,7 +158,7 @@ test, and two Playwright selector bugs in the original `module-03-friends.spec.t
 pre-existing `vitest.config.ts` gap (missing `tests/e2e/**` exclude) that had been causing Vitest to attempt
 to load the two Playwright-only spec files and fail 2 suites with zero actual product regressions — a
 one-line test-tooling fix, not a product-module change. **Two real product bugs surfaced during the live
-E2E run (2026-07-10)**:
+E2E run**:
 - **Cursor pagination defect**: `Cursor.TryFromBase64Url` (`SimPLe.Backend/src/SimPle.Application/Common/
   Pagination/Cursor.cs`) used `string.IsNullOrEmpty` on a decoded cursor segment, incorrectly rejecting a
   legitimate empty-string component (e.g. an unset search filter) and breaking the friends/mutual-friends
@@ -186,7 +186,7 @@ architectural change was made with explicit user sign-off (`AskUserQuestion` →
   invocation remains the workaround. Fixing the runner is deferred.
 - No automated E2E seed/reset fixture existed for revision 1's 2-user scenario; `seed-b-friends.mjs` now
   exists for the revision-2 multi-user scenario and has been run successfully (one-time, ~8-9 minutes) as
-  part of the 2026-07-10 live E2E verification.
+  part of the live E2E verification.
 - Manual-only browser checks (responsive collapse, keyboard reachability, focus trap/restore, `aria-expanded`
   states, no-console-error sweep) beyond what the live E2E scenario and automated Vitest suite already cover
   remain unverified; local dev test-data contamination from the verification run was cleaned up (not a code
@@ -201,7 +201,7 @@ architectural change was made with explicit user sign-off (`AskUserQuestion` →
 
 Backend (321/0/0 unit, 224/0/0 integration incl. real-Postgres migration/concurrency tests) and frontend
 (188/0/0 vitest, DRIFT=0) are green. The `asvs-lite` security review found zero Critical/High findings, and
-all four revision-2 Medium/Low findings are fixed/resolved and independently re-verified as of 2026-07-10.
+all four revision-2 Medium/Low findings are fixed/resolved and independently re-verified.
 **The expanded multi-user Playwright scenario has been executed against a live seeded local stack and
 passed (1/1, 25.7s)**, proving the full A/B/C/anonymous journey: composed search, request send/accept,
 authorized paginated friends drill-down (20→25 rows across the cursor boundary, no duplicates), live

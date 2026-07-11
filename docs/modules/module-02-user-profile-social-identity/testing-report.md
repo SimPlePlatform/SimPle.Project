@@ -2,7 +2,7 @@
 
 ## Test Strategy
 Backend profile/media/username/social-identity logic covered by xUnit unit + integration tests; frontend
-profile surfaces by Vitest + lint/build. Date: 2026-05-28.
+profile surfaces by Vitest + lint/build.
 
 ## Coverage Target
 90%+ meaningful module coverage (advisory).

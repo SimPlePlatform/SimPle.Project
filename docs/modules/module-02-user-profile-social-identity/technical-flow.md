@@ -1,6 +1,6 @@
 # Technical Flow - Module 02: User Profile & Social Identity
 
-## Recruiter-Facing Summary
+## Summary
 
 The profile system is a player's public identity on SimPle: avatar and banner media, display info, external
 links, interests, profile visibility, a Player/Developer identity flag, and a fair username-change policy.

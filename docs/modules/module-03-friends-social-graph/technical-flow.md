@@ -9,7 +9,7 @@
 > were fixed during that run: a `Cursor.cs` pagination defect and a `ProtectedRoute`/route-group gap for
 > anonymous public-profile access (both detailed in "Files Changed And Why" below).
 
-## Recruiter-Facing Summary
+## Summary
 
 The friends system lets a SimPle player build and navigate their social graph: search for people by name,
 land on a real profile page instead of a raw user id, see at a glance whether they're already friends
@@ -107,7 +107,7 @@ so the two can never disagree. Two new additive migrations
 - **Known, accepted limitations carried forward (not defects):** anonymous viewers never fetch
   `ProfileViewerContext` (the endpoint is `[Authorize]`-gated), so an anonymous visitor sees a plain,
   non-linked friend count instead of the `canViewFriends`-gated drill-down link.
-- **Fixed during live E2E verification (2026-07-10), not part of the original slice plan:** anonymous/
+- **Fixed during live E2E verification, not part of the original slice plan:** anonymous/
   unverified visitors were being redirected away from every `(app)`-group route by `ProtectedRoute`,
   including `Public`-visibility profiles the backend already served anonymously. Fixed by moving
   `/u/[username]`, `/u/[username]/friends`, and `/u/[username]/mutual-friends` into a new `(public)` Next.js
@@ -128,8 +128,8 @@ all call `invalidate()` or reload the affected panel — see the Mutation Invali
   `retired_usernames` table) and `20260709094629_AddPeopleSearchAndSendCap` (send-cap columns + prefix
   indexes).
 - **Migration safety notes:** both are forward-only and additive; `Down()` on each drops only what `Up()`
-  added. The `SearchVisibility` backfill in the first migration originally used a flat default (fixed
-  2026-07-10 — see below); the prefix-search indexes use raw-SQL `varchar_pattern_ops`/`text_pattern_ops`
+  added. The `SearchVisibility` backfill in the first migration originally used a flat default (fixed —
+  see below); the prefix-search indexes use raw-SQL `varchar_pattern_ops`/`text_pattern_ops`
   DDL (static, no injection surface) since EF cannot scaffold pattern-ops indexes.
 - **Data preservation notes:** no existing data altered destructively; new columns are additive with
   defaults, and the `SearchVisibility` backfill (once corrected) only re-derives a value from data already
@@ -164,14 +164,14 @@ nonexistent/private/blocked-either-direction/deleted/suspended/banned. `BlockedB
 distinguishable `relationshipState`; the profile read 404s first.
 
 The `--security=asvs-lite` review of the revision-2 delta
-(`SimPle.Project/docs/security/audits/module-03-friends-social-graph.md`, 2026-07-09) found zero
+(`SimPle.Project/docs/security/audits/module-03-friends-social-graph.md`) found zero
 Critical/High findings. Two Medium findings (M03-008: friend/mutual visible-counts computed with a narrower
 privacy filter than their paged-list counterpart; M03-009: a migration backfill that ignored existing users'
 current profile visibility) and two Low findings (M03-010: an intentional rate-limit budget split, confirmed
 by product decision; M03-011: a missing explicit cache header on the anonymous profile branch) were opened
 and have all since been **fixed (M03-008, M03-009, M03-011) or resolved (M03-010, product decision) and
-verified on 2026-07-10** — see the security audit's "Fix Verification (2026-07-10)" section. All revision-1
-findings (M03-001, M03-006, M03-007) were already fixed as of 2026-07-06.
+verified** — see the security audit's "Fix Verification" section. All revision-1
+findings (M03-001, M03-006, M03-007) were already fixed in the prior revision.
 
 ## Realtime/Socket.IO Flow If Applicable
 
@@ -232,7 +232,7 @@ under two different rules.
 `UpdateFriendSettingsRequestDto.cs`; migrations `20260709054351_AddProfilePrivacyAndRetiredUsernames`,
 `20260709094629_AddPeopleSearchAndSendCap`; `Program.cs` (new rate-limiter policies + chained `GlobalLimiter`).
 
-**Backend, found and fixed during live E2E verification** (`verification.json`, 2026-07-10):
+**Backend, found and fixed during live E2E verification** (`verification.json`):
 `SimPle.Application/Common/Pagination/Cursor.cs` — `TryFromBase64Url` now checks `value is null` instead of
 `string.IsNullOrEmpty`, fixing an incorrect rejection of a legitimate empty-string cursor component that
 broke friends/mutual-friends "Load more" pagination in the common no-filter case; `ProfileService.cs` and
@@ -245,10 +245,10 @@ broke friends/mutual-friends "Load more" pagination in the common no-filter case
 `FriendsPage.tsx`/`AddFriendModal.tsx`/`DashboardPage.tsx`/`InviteFriendModal.tsx`/`SettingsPage.tsx`
 (settings shape + shared identity component adoption); `vitest.config.ts` (excluded `tests/e2e/**`, fixing a
 pre-existing gap that misloaded the 2 Playwright-only spec files under Vitest); E2E fixtures
-`tests/e2e/module-03-friends.spec.ts`, `tests/e2e/seed-b-friends.mjs` (executed, 2026-07-10);
+`tests/e2e/module-03-friends.spec.ts`, `tests/e2e/seed-b-friends.mjs` (executed);
 `.claude/config/module-e2e-manifest.json` flipped to `present`.
 
-**Frontend, found and fixed during live E2E verification** (`verification.json`, 2026-07-10):
+**Frontend, found and fixed during live E2E verification** (`verification.json`):
 `app/(public)/layout.tsx` (new — renders full `AppShell` for authenticated sessions, minimal public header
 otherwise), `app/(public)/u/[username]/page.tsx`, `.../friends/page.tsx`, `.../mutual-friends/page.tsx`
 (moved out of `app/(app)/...` into the new `(public)` route group so `ProtectedRoute` no longer redirects
@@ -278,5 +278,5 @@ pattern that M03-008's fix depends on.
 | Legacy `/profile/{uuid}` resolution for non-owner ids | Later hardening | Shows an honest "moved" `EmptyState`; no backend UUID→username lookup endpoint exists yet |
 | Anonymous viewer `canViewFriends` gating | Accepted, not deferred | Anonymous visitors see a plain friend count only, since `ProfileViewerContext` is authenticated-only by design |
 | Notification delivery on outbox events | Module 11 | Events staged transactionally; no consumer/transport yet |
-| Production review and final evidence sign-off | `/simple production-review module=3` | Live E2E already passed (1/1, 2026-07-10); production-review and final evidence remain |
+| Production review and final evidence sign-off | `/simple production-review module=3` | Live E2E already passed (1/1); production-review and final evidence remain |
 | `mock/friends.ts` | Module 5/7 | Still imported by lobby/game surfaces; deletion deferred |

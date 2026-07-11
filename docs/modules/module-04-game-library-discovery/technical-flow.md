@@ -1,6 +1,6 @@
 # Technical Flow - Module 04: Game Library & Discovery
 
-## Recruiter-Facing Summary
+## Summary
 
 Module 4 gives SimPle a real game catalog: a browsable, filterable, searchable library backed by Postgres
 instead of a static mock array, a per-game detail page that never invents online-player counts or fake

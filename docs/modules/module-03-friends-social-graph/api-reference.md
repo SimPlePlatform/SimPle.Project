@@ -1,6 +1,6 @@
 # API Reference - Module 03: Friends & Social Graph
 
-> Revision 2. Supersedes the 2026-07-06 revision-1-only version of this file. Adds bounded people search,
+> Revision 2. Supersedes the revision-1-only version of this file. Adds bounded people search,
 > canonical profile reads, viewer-relationship context, and privacy-aware target/mutual friend-list
 > drill-down on top of the unchanged revision-1 `/api/friends/*` contract. Backend evidence:
 > `docs/ai-workflow/evidence/checkpoints/module-03-friends-social-graph/backend.json` (321/321 unit,
@@ -260,7 +260,7 @@ Per-account fixed windows (partitioned by JWT subject), rejections carry `Retry-
 
 `friend-discovery` and `people-search` additionally chain into one shared **120/hour/IP** `GlobalLimiter`.
 They remain two independently-keyed 30/min/account windows rather than one shared 30/min budget — confirmed
-as the intended design by product decision (2026-07-10, resolves the former M03-010 note); the per-IP hourly
+as the intended design by product decision (resolves the former M03-010 note); the per-IP hourly
 ceiling backstops both regardless. Middleware order is
 `UseAuthentication() → UseRateLimiter() → UseAuthorization()`.
 
@@ -279,9 +279,9 @@ expose only minimal identity plus visible mutual counts. Mass-assignment allow-l
 `friendRequestPrivacy`, `searchVisibility`, `friendsListVisibility` only — `state`, `requesterId`,
 `PrivacyPolicyVersion`, and all outbox/domain-version fields are server-owned and stripped.
 
-The `--security=asvs-lite` review of the revision-2 delta (2026-07-09,
-`SimPle.Project/docs/security/audits/module-03-friends-social-graph.md`) found zero Critical/High findings.
-Two Medium findings were opened and have since been fixed and verified (2026-07-10):
+The `--security=asvs-lite` review of the revision-2 delta
+(`SimPle.Project/docs/security/audits/module-03-friends-social-graph.md`) found zero Critical/High findings.
+Two Medium findings were opened and have since been fixed and verified:
 - **M03-008** — `GetVisibleFriendCountAsync`, `GetMutualFriendCountAsync`, and `SearchPeopleAsync`'s
   per-result mutual count now apply the same visibility/suspension/block filters as their sibling paged-list
   queries, so a reported count can no longer exceed what the same viewer can page through.
@@ -289,16 +289,16 @@ Two Medium findings were opened and have since been fixed and verified (2026-07-
   backfill now runs a corrective `UPDATE` that re-derives each existing row's `SearchVisibility` from its
   owner's current `ProfileVisibility` (`Public→Everyone`, `FriendsOnly→FriendsOfFriends`, `Private→Nobody`).
 
-Two Low findings were also opened: **M03-010** (resolved 2026-07-10 by product decision — the two
-independent 30/min budgets are the intended design, documented above, no code change) and **M03-011** (fixed
-2026-07-10 — the anonymous profile branch now sets an explicit `Cache-Control`/`Vary` header).
+Two Low findings were also opened: **M03-010** (resolved by product decision — the two
+independent 30/min budgets are the intended design, documented above, no code change) and **M03-011** (fixed —
+the anonymous profile branch now sets an explicit `Cache-Control`/`Vary` header).
 
 ## Related Tests
 Backend unit + integration + real-PostgreSQL verification — UnitTests 321/321, IntegrationTests 224/224 (0
 skipped, incl. migration smoke and Postgres concurrency/translation/EXPLAIN tests). Frontend `npx vitest run`
 188/188 across all reconciled suites; `check-contract-drift.mjs` reports DRIFT=0. The expanded multi-user
 navigation E2E (`tests/e2e/module-03-friends.spec.ts`) has been **executed against a live local stack and
-passed** (1/1, 25.7s, 2026-07-10) — see `docs/ai-workflow/evidence/checkpoints/
+passed** (1/1, 25.7s) — see `docs/ai-workflow/evidence/checkpoints/
 module-03-friends-social-graph/verification.json`. Two real product-code bugs surfaced and were fixed during
 that run: a `Cursor.cs` pagination defect (`string.IsNullOrEmpty` → `value is null`) and a `ProtectedRoute`/
 route-group gap that had been blocking anonymous access to `Public`-visibility profiles (fixed via a new
@@ -306,11 +306,11 @@ route-group gap that had been blocking anonymous access to `Public`-visibility p
 
 ## Last Verified Command
 Backend: `dotnet build SimPle.sln`; `dotnet test tests/SimPle.UnitTests` (321/0/0); real-Postgres
-`dotnet test tests/SimPle.IntegrationTests` (224/0/0, 0 skipped) — 2026-07-09. Frontend: `npx tsc --noEmit`,
-`npm run lint`, `npm run test` (188/188), `node scripts/check-contract-drift.mjs` (DRIFT=0) — 2026-07-09.
+`dotnet test tests/SimPle.IntegrationTests` (224/0/0, 0 skipped). Frontend: `npx tsc --noEmit`,
+`npm run lint`, `npm run test` (188/188), `node scripts/check-contract-drift.mjs` (DRIFT=0).
 Live E2E verification: `node tests/e2e/seed-b-friends.mjs` then `npx playwright test
 tests/e2e/module-03-friends.spec.ts --project=chromium` against a live backend/frontend/real-Postgres stack
 — 1 passed, 25.7s, plus a follow-up `dotnet build` (Cursor.cs fix) and `npx tsc --noEmit` (route-group
-restructuring) — 2026-07-10. Security fix verification (M03-008/M03-009/M03-011): targeted unit filter
+restructuring). Security fix verification (M03-008/M03-009/M03-011): targeted unit filter
 re-run plus a live E2E re-run against real Postgres exercising the corrected correlated-subquery LINQ, and a
-direct `curl` header check — 2026-07-10.
+direct `curl` header check.
