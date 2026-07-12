@@ -195,7 +195,33 @@ production review and final evidence sign-off are still outstanding.
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
 | Production review and final evidence sign-off | Pending |
 
-### Modules 6-14, 16: Planned; Module 15 Future
+### Module 6: Lobby & Matchmaking System - Backend, Frontend & Security Verified, Production Review Pending
+
+Module 6 makes lobby creation, joining, invites, and Quick Match real, replacing the prior UI-only mock and
+orphaned backend stub. It adds seven new tables (`lobbies`, `lobby_members`, `lobby_invites`,
+`lobby_join_credentials`, `lobby_start_requests`, `matchmaking_tickets`, `matchmaking_assignments`) plus an
+additive `game_capability_profiles` table and a new alternate key on Module 4's `games` table; 20 new
+endpoints under `/api/lobbies` and `/api/matchmaking`; and the codebase's first outbox dispatcher and first
+use of `FOR UPDATE SKIP LOCKED`. Backend implementation, two `--security=asvs-lite` review phases (backend
+and post-frontend), frontend wiring, and live-stack E2E verification are complete and independently
+verified. Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is complete — see
+`docs/modules/module-06-lobby-matchmaking-system/`. The module is **not yet complete**: production review
+and final evidence sign-off are still outstanding, and the matching worker/Start action remain dormant
+pending Module 8's match-runtime handoff.
+
+| Area | Status |
+|---|---|
+| Backend: lobby/invite/credential/matchmaking domain, outbox dispatcher, bounded transaction retry | Done |
+| Backend: legacy stub disposition (orphaned `Lobby`/`LobbySlot` deleted and replaced) | Done |
+| Backend: 862 unit + 375 integration tests (real PostgreSQL incl. two-worker claim race, one-active invariant) | Done - 862/862, 375/375 |
+| Security: `--security=asvs-lite` review, backend + post-frontend phases | Done - zero unwaived Critical/High/Medium; 2 Low + 5 Info deferred |
+| Frontend: create/join/leave/ready/invite/Quick Match wiring across 9 surfaces | Done - 243/243 vitest, DRIFT=0 |
+| Verification: live-stack Playwright E2E (real backend + frontend + Postgres) | Done - 2/2 passed |
+| Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
+| Production review and final evidence sign-off | Pending |
+| Match runtime (matching worker, Start action) | Dormant pending Module 8 |
+
+### Modules 7-14, 16: Planned; Module 15 Future
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -498,6 +524,8 @@ Status:
 ### Module 6: Lobby & Matchmaking System
 
 > Product behavior is authoritative in `../docs/module-requirements/module-06-lobby-matchmaking-system.md`.
+> Module 6 owns lobby/invite/credential and matchmaking-ticket lifecycle; Module 8 owns the persisted match
+> room the lobby hands off to once a match runtime is registered.
 
 Purpose:
 - Make the create-lobby modal and lobby page real.
@@ -509,31 +537,58 @@ Current UI target:
 - Dashboard lobby invites and active lobby link
 
 Included features:
-- [ ] Create lobby
-- [ ] Join lobby by code/link
-- [ ] Leave lobby
-- [ ] Public/private lobby
-- [ ] Seats and max player count
-- [ ] Ready state
-- [ ] Host controls
-- [ ] Invite links/codes with expiry
-- [ ] Lobby settings: game, time control, ranked/casual, region, spectators
-- [ ] AI fill toggle as a setup option, with actual AI behavior deferred to
-      Module 9
-- [ ] Required same-region Quick Match queue with deterministic widening per-game rating bands
+- [x] Create lobby (public/private, seats/max players, settings: game, time control, ranked/casual,
+      region, spectators, AI fill toggle as a setup option with actual AI behavior deferred to Module 9)
+- [x] Join lobby by code/link (`LobbyJoinCredential`, HMAC-SHA256 digest, constant-time compare)
+- [x] Leave lobby, host controls (kick, settings patch, deterministic host transfer)
+- [x] Ready state (host implicitly ready; reset on every settings change and every join/leave/kick)
+- [x] Invite links/codes with expiry (30 minutes); invite accept/decline routes
+- [x] Required same-region Quick Match queue with deterministic ±100/±200/±400 rating-band widening at
+      15s/30s/60s ticket-age boundaries, anchor-oldest-ticket tie-break
+- [ ] Start reaching a real, playable match room (blocked on Module 8's match runtime; `Start` correctly
+      returns `Lobbies.MatchRuntimeUnavailable` while no runtime is registered)
 
 Backend/database/API work:
-- [ ] Persist lobbies and lobby slots
-- [ ] Lobby controller, service, repository, DTOs, validators
-- [ ] Capacity, expiry, privacy, and host authorization checks
+- [x] Persist lobbies, members, invites, join credentials, start requests, matchmaking tickets/assignments,
+      and an additive `game_capability_profiles` table (7 new tables total)
+- [x] 20 endpoints: `LobbiesController` (17 routes) and `MatchmakingController` (3 routes), full DTOs/
+      validators
+- [x] Capacity, expiry, privacy, and host authorization checks; 7 partial unique indexes as the real
+      concurrency boundary; cross-table `pg_advisory_xact_lock` for one-active-lobby-or-ticket
+- [x] Codebase's first outbox dispatcher (`OutboxProcessor`/`IOutboxHandler`) and first use of
+      `FOR UPDATE SKIP LOCKED` in the matching worker
+- [x] Legacy stub disposition: orphaned `Lobby`/`LobbySlot`/`LobbyStatus`/`LobbyPrivacy` deleted and
+      replaced, following the Module 5 precedent
+- [x] 862 unit + 375 integration tests, including real-PostgreSQL migration/concurrency/race suites (two-
+      worker double-claim, concurrent last-seat join, cross-table invariant, serialization/deadlock retry)
 
 Frontend work:
-- [ ] Wire create/join/leave/ready/start actions
-- [ ] Replace hard-coded `SP-7F-29` with real lobby codes
-- [ ] Keep live updates and chat mock until Module 7
+- [x] Wired create/join/leave/ready/invite/kick/settings/Quick Match actions across 9 surfaces
+      (`CreateLobbyModal`, `QuickMatchModal`, `InviteFriendModal`, `LobbyPage`, `SearchResultsPage`'s
+      Public Lobbies tab, `DashboardPage`, `ProfilePage`, `GameDetailPage`, `LandingPage`)
+- [x] Replaced hard-coded `SP-7F-29` with real lobby codes/credentials everywhere except one known
+      remaining `Sidebar.tsx` nav-link defect (tracked, not yet fixed)
+- [x] Start intentionally left disabled with honest copy naming Module 8, instead of the prior mock
+      navigation to a room that doesn't exist yet
+- [x] Keep live updates and chat mock until Module 7
+- [x] 243/243 Vitest passing, `check-contract-drift.mjs` DRIFT=0, production build clean
+
+Verification:
+- [x] Backend: 862/862 unit + 375/375 integration (real PostgreSQL), 0 failed
+- [x] Security review (`--security=asvs-lite`), backend + post-frontend phases: zero unwaived Critical/
+      High/Medium; 2 Low + 5 Info recorded and deferred
+- [x] Frontend: 243/243 Vitest, lint clean, `check-contract-drift.mjs` DRIFT=0, production build clean
+- [x] Live-stack Playwright E2E (real backend + frontend + PostgreSQL, no mocks): 2/2 passed, zero axe
+      violations, after a fix-and-rerun loop that found and fixed one real product bug (game-lifecycle
+      gating) and two real pre-existing accessibility defects
+- [ ] Production review and final evidence sign-off (next)
 
 Status:
-- UI only, with partial backend domain stub.
+- Backend, both security review phases, frontend, and live-stack verification are complete and
+  independently verified (see `docs/modules/module-06-lobby-matchmaking-system/`). Production review and
+  final evidence sign-off remain before Module 6 is declared complete. The matching worker and `Start`
+  action are intentionally dormant pending Module 8's match-runtime handoff and do not yet produce a
+  playable match room.
 
 ### Module 7: Real-Time Presence, Lobby Updates & Chat
 
