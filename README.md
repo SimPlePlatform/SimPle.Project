@@ -168,7 +168,7 @@ complete and merged to `main`** in all three repos (`SimPLe.Backend`, `SimpLe.Fr
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
 | Production review and final evidence sign-off | Done - merged to `main` |
 
-### Module 5: Game Hosting Architecture - Backend Verified, Production Review Pending
+### Module 5: Game Hosting Architecture - Locally Complete; Delivery Evidence Deferred to Module 14
 
 Module 5 is backend-only and deliberately pure/in-memory: it replaces three orphaned, unimplemented
 game-host stub files with a typed `IGameDefinition<TState,TCommand,TPlayerView>` plugin contract, a
@@ -178,8 +178,9 @@ boundary, and a catalog/engine compatibility validator. It adds no EF entity/mig
 no frontend code — Module 4's game-library UI is untouched. Backend implementation, `--security=asvs-lite`
 review, and targeted verification (including a two-process golden-vector determinism proof) are complete and
 independently verified. Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is
-complete — see `docs/modules/module-05-game-hosting-architecture/`. The module is **not yet complete**:
-production review and final evidence sign-off are still outstanding.
+complete — see `docs/modules/module-05-game-hosting-architecture/`. Module 5 is complete for its local,
+in-process scope. Hosted CI, portable staging, release provenance, and cloud deployment evidence are owned
+by Module 14 rather than retroactively being a Module 5 requirement.
 
 | Area | Status |
 |---|---|
@@ -193,9 +194,9 @@ production review and final evidence sign-off are still outstanding.
 | Verification: Stopwatch benchmark (10,000-command reference workload) | Done - p95 0.0293 ms vs. < 25 ms budget |
 | Verification: `check-contract-drift.mjs` (no new route/frontend surface) | Done - DRIFT=0 |
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
-| Production review and final evidence sign-off | Pending |
+| Local completion evidence | Done - cloud/CI delivery evidence is explicitly deferred to Module 14 |
 
-### Module 6: Lobby & Matchmaking System - Backend, Frontend & Security Verified, Production Review Pending
+### Module 6: Lobby & Matchmaking System - Locally Complete; Delivery Evidence Deferred to Module 14
 
 Module 6 makes lobby creation, joining, invites, and Quick Match real, replacing the prior UI-only mock and
 orphaned backend stub. It adds seven new tables (`lobbies`, `lobby_members`, `lobby_invites`,
@@ -205,9 +206,9 @@ endpoints under `/api/lobbies` and `/api/matchmaking`; and the codebase's first 
 use of `FOR UPDATE SKIP LOCKED`. Backend implementation, two `--security=asvs-lite` review phases (backend
 and post-frontend), frontend wiring, and live-stack E2E verification are complete and independently
 verified. Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is complete — see
-`docs/modules/module-06-lobby-matchmaking-system/`. The module is **not yet complete**: production review
-and final evidence sign-off are still outstanding, and the matching worker/Start action remain dormant
-pending Module 8's match-runtime handoff.
+`docs/modules/module-06-lobby-matchmaking-system/`. Module 6 is complete for its local scope; hosted CI,
+portable staging, release provenance, and cloud deployment evidence are owned by Module 14. The matching
+worker/Start action remain intentionally dormant pending Module 8's match-runtime handoff.
 
 | Area | Status |
 |---|---|
@@ -218,10 +219,44 @@ pending Module 8's match-runtime handoff.
 | Frontend: create/join/leave/ready/invite/Quick Match wiring across 9 surfaces | Done - 243/243 vitest, DRIFT=0 |
 | Verification: live-stack Playwright E2E (real backend + frontend + Postgres) | Done - 2/2 passed |
 | Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
-| Production review and final evidence sign-off | Pending |
+| Local completion evidence | Done - cloud/CI delivery evidence is explicitly deferred to Module 14 |
 | Match runtime (matching worker, Start action) | Dormant pending Module 8 |
 
-### Modules 7-14, 16: Planned; Module 15 Future
+### Module 7: Real-Time Presence, Lobby Updates & Chat - Locally Complete; Delivery Evidence Deferred to Module 14
+
+Module 7 replaces the mock presence dots, lobby-update polling, and chat placeholder with real ASP.NET Core
+8 SignalR: one authenticated `/hubs/realtime` endpoint (exact-origin allowlist, `CloseOnAuthenticationExpiration`,
+and a per-method scope/suspension/block recheck on every subscribe/send/delete rather than trusting the
+principal cached at handshake), an in-memory presence registry (`Playing > InLobby > Online > Away >
+Offline` precedence, a 5-connection-per-user cap, and 0s/2s/10s/30s reconnect), and persistent lobby chat
+(30-day retention, block-aware delivery identically on the realtime and REST-history paths, with a
+moderation-hold seam left empty for Module 12). Backend implementation, two `--security=asvs-lite` review
+phases (backend and post-frontend), frontend wiring, and live-stack E2E verification are complete and
+independently verified. Documentation (`api-reference.md`, `technical-flow.md`, `testing-report.md`) is
+complete — see `docs/modules/module-07-realtime-presence-chat/`. Module 7 is functionally complete for its
+local, single-instance scope. Its formal ordered stage-checkpoint chain (`index.json`) carries only the
+`planning` stage — the backend security-review stage ran on Sonnet 5 instead of the manifest-routed Opus for
+that assurance-sensitive stage, so later stages could not be chained in; the project owner explicitly
+**waived** backfilling that chain for this module. This is a documented process/tooling gap, not a
+functional one — the security, frontend-security, and verification checkpoint files themselves exist, are
+internally valid, and record real, passing evidence. `releaseEligible` stays **false** regardless, pending
+Module 14's CI/container/staging foundation. Match-scope chat/updates, moderation evidence copy, live
+suspension enforcement, and the Redis/Azure SignalR backplane are explicitly out of scope, deferred to
+Modules 8/12/14.
+
+| Area | Status |
+|---|---|
+| Backend: SignalR hub, presence registry, scope authorization, chat aggregate/service/repository, retention sweeper, outbox watermark-aware handler | Done |
+| Backend: legacy stub disposition (dead placeholder notifier interfaces + orphaned `DirectMessage` enum removed) | Done |
+| Backend: full unit suite | Done - 962/962 passed (`operations.json`); 955/955 recorded earlier in the same session before verification-stage fixes |
+| Security: `--security=asvs-lite` review, backend + post-frontend phases | Done - zero unwaived Critical/High; 2 Medium + 2 Low fixed and test-verified; 3 Info deferred non-blocking |
+| Frontend: realtime client, presence de-mocking, chat wiring across 7 surfaces | Done - 264/264 vitest, DRIFT=0 |
+| Verification: live-stack Playwright E2E (real backend + frontend + Postgres) | Done - 1/1 passed, zero axe violations |
+| Documentation: `api-reference.md`, `technical-flow.md`, `testing-report.md` | Done |
+| Formal ordered stage-checkpoint chain (`index.json`) | Owner-waived process gap - only `planning` indexed; functional evidence unaffected |
+| Local completion evidence | Done - cloud/CI delivery evidence is explicitly deferred to Module 14 |
+
+### Modules 8-14, 16: Planned; Module 15 Future
 
 The frontend already includes mock UI for dashboard, profile, settings, friends,
 game library, game detail, lobby, chat, match room, leaderboards, and
@@ -514,12 +549,12 @@ Verification:
 - [x] `check-contract-drift.mjs`: DRIFT=0, confirming no new route or frontend call
 - [x] Browser E2E: `not_applicable` (no browser surface); the two-process `GameHost`-filtered test run is
       the manifest-mandated substitute
-- [ ] Production review and final evidence sign-off (next)
+- [x] Local completion evidence recorded; hosted CI/portable-staging/deployment verification belongs to Module 14
 
 Status:
 - Backend, security review, and targeted verification are complete and independently verified
-  (see `docs/modules/module-05-game-hosting-architecture/`). Production review and final evidence sign-off
-  remain before Module 5 is declared complete.
+  (see `docs/modules/module-05-game-hosting-architecture/`). **Module 5 is locally complete.** Its hosted
+  CI, portable staging, and deployment evidence is a later Module 14 delivery responsibility.
 
 ### Module 6: Lobby & Matchmaking System
 
@@ -581,47 +616,77 @@ Verification:
 - [x] Live-stack Playwright E2E (real backend + frontend + PostgreSQL, no mocks): 2/2 passed, zero axe
       violations, after a fix-and-rerun loop that found and fixed one real product bug (game-lifecycle
       gating) and two real pre-existing accessibility defects
-- [ ] Production review and final evidence sign-off (next)
+- [x] Local completion evidence recorded; hosted CI/portable-staging/deployment verification belongs to Module 14
 
 Status:
 - Backend, both security review phases, frontend, and live-stack verification are complete and
-  independently verified (see `docs/modules/module-06-lobby-matchmaking-system/`). Production review and
-  final evidence sign-off remain before Module 6 is declared complete. The matching worker and `Start`
-  action are intentionally dormant pending Module 8's match-runtime handoff and do not yet produce a
-  playable match room.
+  independently verified (see `docs/modules/module-06-lobby-matchmaking-system/`). **Module 6 is locally
+  complete.** Its hosted CI, portable staging, and deployment evidence is a later Module 14 delivery
+  responsibility. The matching worker and `Start` action are intentionally dormant pending Module 8's
+  match-runtime handoff and do not yet produce a playable match room.
 
 ### Module 7: Real-Time Presence, Lobby Updates & Chat
 
 > Product behavior is authoritative in `../docs/module-requirements/module-07-realtime-presence-chat.md`.
+> Module 7 owns the realtime transport/authorization boundary and lobby chat; Module 8 registers match
+> scope on the same typed contract, and Module 12 owns moderation evidence copy and the live suspension
+> trigger.
 
 Purpose:
-- Make online status, lobby updates, and chat live.
+- Make online status, lobby updates, and lobby chat live.
 
 Current UI target:
 - Presence dots in sidebar, topbar, friends page, lobby, and match room
 - Lobby chat panel
-- Match chat panel
+- Match chat panel (visibly unavailable pending Module 8)
 - Lobby updates without refresh
 
 Included features:
-- [ ] Presence states: online, away, playing, in lobby, offline
-- [ ] Lobby live updates over SignalR
-- [ ] Lobby chat
-- [ ] Match chat
-- [ ] Persistent lobby chat with 30-day retention and authorized cursor history
-- [ ] Basic abuse controls: length limits, rate limits, delete/flag hooks
+- [x] Presence states: online, away, playing, in lobby, offline (`Max` precedence across up to 5 connections per user)
+- [x] Lobby live updates over SignalR (thin `LobbyChanged` hint + client re-fetch, replacing the prior 2-second poll)
+- [x] Lobby chat (send/read/delete, block-aware identically on the realtime and REST-history paths)
+- [ ] Match chat (blocked on Module 8's match-scope authorizer; `NullMatchScopeAuthorizer` returns `Realtime.ScopeNotAvailable` today)
+- [x] Persistent lobby chat with 30-day retention and authorized `(createdAt, id)` cursor history
+- [x] Basic abuse controls: length limits (1-1000 Unicode scalars), rate limits (5 connections/user; 5 msgs/5s + 20/min), versioned deny-list profanity filter, author-only delete producing a tombstone
 
 Backend/database/API work:
-- [ ] SignalR hubs for presence, lobby updates, and chat
-- [ ] Chat persistence, retention, moderation evidence handoff, and reconnect snapshot convergence
-- [ ] Authenticated hub connections
+- [x] One authenticated `/hubs/realtime` SignalR endpoint (`SubscribeLobby`, `UnsubscribeLobby`, `SendLobbyMessage`, `ReportActivity`), exact-origin handshake allowlist, `CloseOnAuthenticationExpiration`
+- [x] `IRealtimeScopeAuthorizer` re-checking membership/suspension/block on every subscribe/send/delete (never a cached prior result); `NullMatchScopeAuthorizer` seam for Module 8
+- [x] In-memory presence registry, chat aggregate/service/repository, and an outbox-watermark-aware `LobbyRealtimeHandler`
+- [x] Two REST routes: `GET /api/chat/lobbies/{lobbyId}/messages`, `DELETE /api/chat/messages/{messageId}`
+- [x] Additive migration `20260717001316_AddChatAndRealtimeActivation` (`chat_messages`, `chat_message_holds`, `outbox_handler_activations`) - no existing table altered or dropped
+- [x] `AuthService.LogoutAsync` now revokes the session family (approved Module 1 behavior change)
+- [x] Legacy stub disposition: dead placeholder notifier interfaces deleted; orphaned `DirectMessage` enum value removed, proven by a reference/search test
 
 Frontend work:
-- [ ] Wire `ChatPanel` to realtime events
-- [ ] Replace mock presence/activity strings
+- [x] Wire `ChatPanel` to realtime events (composer `<textarea>`, dedupe across REST + realtime reconciliation, stable message-id keys)
+- [x] Replace mock presence/activity strings across 7 surfaces (`Sidebar`, `Topbar`, `SettingsPage`, `DashboardPage`, `FriendsPage`, `LobbyPage`'s `SeatCard`, `GameRoomPage`) - absent presence renders as unknown, never online
+- [x] Match `ChatPanel` made visibly unavailable with its mock send removed; landing copy no longer promises direct messages
+
+Verification:
+- [x] Backend: full unit suite 962/962 passed (`operations.json`), 0 build errors/warnings, real-PostgreSQL retention/hold-race and idempotency suites passed
+- [x] Security review (`--security=asvs-lite`), backend + post-frontend phases: zero unwaived Critical/High; 2 Medium + 2 Low findings fixed and test-verified; 3 Info findings recorded and deferred, non-blocking
+- [x] Frontend: 264/264 Vitest, lint clean, `check-contract-drift.mjs` DRIFT=0 (87 backend routes, 72 unique frontend calls), production build clean (19 routes)
+- [x] Live-stack Playwright E2E (real backend + frontend + PostgreSQL, no mocks): 1/1 passed, zero axe violations, reached after a fix-and-rerun loop that found and fixed one real domain bug (`Lobby.CloseInternal`/`TryExpire` never released stranded `LobbyMember` rows) and two real accessibility defects (`LobbyPage.tsx` missing `<h1>`, `ChatPanel.tsx` low-contrast placeholder text)
+- [x] Local completion evidence recorded; hosted CI/portable-staging/deployment verification belongs to Module 14
 
 Status:
-- UI only, with backend notifier/chat stubs.
+- Backend, both security review phases, frontend, and live-stack verification are complete and independently
+  verified (see `docs/modules/module-07-realtime-presence-chat/`). **Module 7 is functionally, locally
+  complete.** Its formal ordered stage-checkpoint chain (`index.json`) carries only the `planning` stage -
+  the backend security-review stage ran on Sonnet 5 rather than the manifest-routed Opus, so later stages
+  could not be chained in; the project owner explicitly **waived** backfilling that chain for this module.
+  This is a process/tooling gap, not a functional gap: the security, frontend-security, and verification
+  checkpoint files themselves exist, are internally valid, and record real, passing evidence. `releaseEligible`
+  stays **false** regardless of this waiver, pending Module 14's CI/container/staging foundation and a
+  human-configured deployment provider. Match scope (chat and live updates) is deferred to Module 8
+  (`NullMatchScopeAuthorizer` returns `Realtime.ScopeNotAvailable` today); moderation evidence copy, the
+  two-year retention domain, and a live suspension trigger are deferred to Module 12; the Redis/Azure
+  SignalR backplane, distributed presence, sticky sessions, and multi-instance operation are deferred as a
+  hard Phase 1 boundary, not a tuning knob. Two follow-ups remain owner-authorized and tracked, not silently
+  resolved: the E2E spec's own lack of self-cleanup (P2, due before Module 14 CI), and a scoped, one-off,
+  local-dev-only release of a real account's (`mohannad`) pre-existing orphaned lobby-membership row,
+  authorized but not yet executed as of this evidence.
 
 ### Module 8: Generic Match Room & Match State
 

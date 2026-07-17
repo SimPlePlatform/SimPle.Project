@@ -280,5 +280,6 @@ checksum fragility. Evidence:
 `docs/ai-workflow/evidence/checkpoints/module-06-lobby-matchmaking-system/verification.json`. **Module 6
 completion carries a blocking M8 handoff item** — the matching worker and Start are dormant behind
 `IMatchRuntimeProbe` until Module 8 registers a runtime, and only the post-M8 integration test may close it;
-this module does not and may not claim a playable match room. Production review and final evidence
-sign-off remain before Module 6 is declared complete.
+this module does not and may not claim a playable match room. **Module 6 is locally complete.** Hosted CI,
+portable staging, release provenance, and cloud deployment evidence are separate Module 14
+responsibilities; none is claimed by this local module evidence.

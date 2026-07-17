@@ -9,8 +9,11 @@ three-file doc set (`api-reference.md`, `technical-flow.md`, `testing-report.md`
 | 01 — Authentication & User Management | Implemented (local/backend/frontend) | [module-01-authentication-user-management](module-01-authentication-user-management/technical-flow.md) |
 | 02 — User Profile & Social Identity | Implemented (local/backend/frontend) | [module-02-user-profile-social-identity](module-02-user-profile-social-identity/technical-flow.md) |
 | 03 — Friends & Social Graph | Implemented (UI + backend; see status) | [module-03-friends-social-graph](module-03-friends-social-graph/technical-flow.md) |
+| 04 — Game Library & Discovery | Locally complete | [module-04-game-library-discovery](module-04-game-library-discovery/technical-flow.md) |
+| 05 — Game Hosting Architecture | Locally complete | [module-05-game-hosting-architecture](module-05-game-hosting-architecture/technical-flow.md) |
+| 06 — Lobby & Matchmaking System | Locally complete | [module-06-lobby-matchmaking-system](module-06-lobby-matchmaking-system/technical-flow.md) |
 
-All other modules are planned. See the root `README.md` for the full roadmap and
+Modules 07 onward are planned. See the root `README.md` for the full roadmap and
 `docs/module-requirements/` for the per-module build briefs.
 
 Local end-to-end verification requires PostgreSQL running with migrations applied; run
