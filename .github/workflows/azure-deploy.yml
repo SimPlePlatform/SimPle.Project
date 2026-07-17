@@ -1,0 +1,159 @@
+name: Deploy reviewed Azure portfolio revision
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: 'Existing release-evidence identifier, for example v0.14.0-demo.1'
+        required: true
+        type: string
+
+# OIDC is used instead of an Azure client secret. This workflow has no cloud
+# credentials until the repository owner configures the azure-demo environment.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-demo
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy reviewed single-instance revision
+    runs-on: ubuntu-latest
+    environment: azure-demo
+    env:
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_CONTAINERAPP_NAME: ${{ vars.AZURE_CONTAINERAPP_NAME }}
+      AZURE_MANAGED_ENVIRONMENT_ID: ${{ vars.AZURE_MANAGED_ENVIRONMENT_ID }}
+      GATEWAY_IMAGE_DIGEST: ${{ vars.GATEWAY_IMAGE_DIGEST }}
+      FRONTEND_IMAGE_DIGEST: ${{ vars.FRONTEND_IMAGE_DIGEST }}
+      BACKEND_IMAGE_DIGEST: ${{ vars.BACKEND_IMAGE_DIGEST }}
+      STORAGE_BUCKET_NAME: ${{ vars.STORAGE_BUCKET_NAME }}
+      STORAGE_SERVICE_URL: ${{ vars.STORAGE_SERVICE_URL }}
+      STORAGE_REGION: ${{ vars.STORAGE_REGION }}
+      RECAPTCHA_SITE_KEY: ${{ vars.RECAPTCHA_SITE_KEY }}
+      EMAIL_FROM_NAME: ${{ vars.EMAIL_FROM_NAME }}
+      DATABASE_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
+      MIGRATION_DATABASE_CONNECTION_STRING: ${{ secrets.MIGRATION_DATABASE_CONNECTION_STRING }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      LOBBY_CREDENTIAL_KEY: ${{ secrets.LOBBY_CREDENTIAL_KEY }}
+      RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      EMAIL_SMTP_HOST: ${{ secrets.EMAIL_SMTP_HOST }}
+      EMAIL_SMTP_USERNAME: ${{ secrets.EMAIL_SMTP_USERNAME }}
+      EMAIL_SMTP_PASSWORD: ${{ secrets.EMAIL_SMTP_PASSWORD }}
+      STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY }}
+      STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY }}
+      APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate deployment inputs are release digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for image in "$GATEWAY_IMAGE_DIGEST" "$FRONTEND_IMAGE_DIGEST" "$BACKEND_IMAGE_DIGEST"; do
+            [[ "$image" == *@sha256:* ]] || { echo 'Every image must be image@sha256:digest.'; exit 1; }
+          done
+          [[ -n "$AZURE_RESOURCE_GROUP" && -n "$AZURE_CONTAINERAPP_NAME" && -n "$AZURE_MANAGED_ENVIRONMENT_ID" ]]
+
+      - name: Sign in to Azure using GitHub OIDC
+        uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474 # v2.3.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Preview Azure changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group what-if \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/azure/main.bicep \
+            --parameters \
+              location="$AZURE_LOCATION" \
+              containerAppName="$AZURE_CONTAINERAPP_NAME" \
+              managedEnvironmentId="$AZURE_MANAGED_ENVIRONMENT_ID" \
+              gatewayImage="$GATEWAY_IMAGE_DIGEST" \
+              frontendImage="$FRONTEND_IMAGE_DIGEST" \
+              backendImage="$BACKEND_IMAGE_DIGEST" \
+              databaseConnectionString="$DATABASE_CONNECTION_STRING" \
+              migrationDatabaseConnectionString="$MIGRATION_DATABASE_CONNECTION_STRING" \
+              jwtSecretKey="$JWT_SECRET_KEY" \
+              lobbyCredentialKey="$LOBBY_CREDENTIAL_KEY" \
+              recaptchaSecretKey="$RECAPTCHA_SECRET_KEY" \
+              googleClientId="$GOOGLE_CLIENT_ID" \
+              emailFrom="$EMAIL_FROM" \
+              emailSmtpHost="$EMAIL_SMTP_HOST" \
+              emailSmtpUsername="$EMAIL_SMTP_USERNAME" \
+              emailSmtpPassword="$EMAIL_SMTP_PASSWORD" \
+              storageAccessKey="$STORAGE_ACCESS_KEY" \
+              storageSecretKey="$STORAGE_SECRET_KEY" \
+              appOrigin="$APP_ORIGIN" \
+              storageBucketName="$STORAGE_BUCKET_NAME" \
+              storageServiceUrl="$STORAGE_SERVICE_URL" \
+              storageRegion="$STORAGE_REGION" \
+              recaptchaSiteKey="$RECAPTCHA_SITE_KEY" \
+              emailFromName="$EMAIL_FROM_NAME"
+
+      - name: Deploy the reviewed revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group create \
+            --name "${{ inputs.release_id }}-${GITHUB_RUN_ID}" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/azure/main.bicep \
+            --parameters \
+              location="$AZURE_LOCATION" \
+              containerAppName="$AZURE_CONTAINERAPP_NAME" \
+              managedEnvironmentId="$AZURE_MANAGED_ENVIRONMENT_ID" \
+              gatewayImage="$GATEWAY_IMAGE_DIGEST" \
+              frontendImage="$FRONTEND_IMAGE_DIGEST" \
+              backendImage="$BACKEND_IMAGE_DIGEST" \
+              databaseConnectionString="$DATABASE_CONNECTION_STRING" \
+              migrationDatabaseConnectionString="$MIGRATION_DATABASE_CONNECTION_STRING" \
+              jwtSecretKey="$JWT_SECRET_KEY" \
+              lobbyCredentialKey="$LOBBY_CREDENTIAL_KEY" \
+              recaptchaSecretKey="$RECAPTCHA_SECRET_KEY" \
+              googleClientId="$GOOGLE_CLIENT_ID" \
+              emailFrom="$EMAIL_FROM" \
+              emailSmtpHost="$EMAIL_SMTP_HOST" \
+              emailSmtpUsername="$EMAIL_SMTP_USERNAME" \
+              emailSmtpPassword="$EMAIL_SMTP_PASSWORD" \
+              storageAccessKey="$STORAGE_ACCESS_KEY" \
+              storageSecretKey="$STORAGE_SECRET_KEY" \
+              appOrigin="$APP_ORIGIN" \
+              storageBucketName="$STORAGE_BUCKET_NAME" \
+              storageServiceUrl="$STORAGE_SERVICE_URL" \
+              storageRegion="$STORAGE_REGION" \
+              recaptchaSiteKey="$RECAPTCHA_SITE_KEY" \
+              emailFromName="$EMAIL_FROM_NAME" \
+            --query properties.outputs -o json > deployment-outputs.json
+
+      - name: Verify public readiness through Caddy
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin=$(jq -r '.publicOrigin.value' deployment-outputs.json)
+          for attempt in {1..36}; do
+            if curl --fail --silent --show-error "$origin/health/ready" | jq -e '.status == "healthy"' >/dev/null; then
+              echo "public_origin=$origin" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Readiness failed for $origin" >&2
+          exit 1
+
+      - name: Publish safe deployment summary
+        shell: bash
+        run: |
+          echo '### Azure portfolio deployment' >> "$GITHUB_STEP_SUMMARY"
+          echo "Release evidence ID: \`${{ inputs.release_id }}\`" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.publicOrigin.value, .deployedBackendImage.value, .deployedFrontendImage.value, .gatewayImageDigest.value' deployment-outputs.json | sed 's/^/- `/' | sed 's/$/`/' >> "$GITHUB_STEP_SUMMARY"

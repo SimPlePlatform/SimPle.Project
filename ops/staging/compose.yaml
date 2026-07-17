@@ -1,0 +1,210 @@
+# Portable, single-instance *staging* topology for Module 14.
+#
+# This file deliberately consumes already-built image references. It does not build the sibling backend
+# or frontend repositories, does not create cloud resources, and is not deployment evidence by itself.
+# Use immutable image digests when a reviewed release tuple exists; .env.example contains safe placeholders.
+name: simple-staging
+
+x-backend-environment: &backend-environment
+  ASPNETCORE_ENVIRONMENT: Staging
+  ASPNETCORE_URLS: http://+:8080
+  ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+  Jwt__Issuer: ${JWT_ISSUER}
+  Jwt__Audience: ${JWT_AUDIENCE}
+  Jwt__SecretKey: ${JWT_SECRET_KEY}
+  LobbyCredential__Key: ${LOBBY_CREDENTIAL_KEY}
+  LobbyCredential__DefaultRegion: ${LOBBY_DEFAULT_REGION:-eu-west}
+  Recaptcha__SecretKey: ${RECAPTCHA_SECRET_KEY}
+  Recaptcha__VerificationUrl: ${RECAPTCHA_VERIFICATION_URL:-https://www.google.com/recaptcha/api/siteverify}
+  Google__ClientId: ${GOOGLE_CLIENT_ID}
+  Email__From: ${EMAIL_FROM}
+  Email__FromName: ${EMAIL_FROM_NAME:-SimPle Staging}
+  Email__SmtpHost: ${EMAIL_SMTP_HOST}
+  Email__SmtpPort: ${EMAIL_SMTP_PORT:-1025}
+  Email__Username: ${EMAIL_SMTP_USERNAME}
+  Email__Password: ${EMAIL_SMTP_PASSWORD}
+  Email__AppUrl: ${APP_ORIGIN}
+  Storage__Provider: S3Compatible
+  Storage__BucketName: ${S3_BUCKET}
+  Storage__Region: ${S3_REGION:-us-east-1}
+  # storage.localhost resolves to Caddy both from a container and from a browser on the host.
+  # It is a local-staging media origin, not a public deployment URL.
+  Storage__ServiceUrl: ${S3_PUBLIC_ENDPOINT:-http://storage.localhost:8080}
+  Storage__AccessKey: ${MINIO_ROOT_USER}
+  Storage__SecretKey: ${MINIO_ROOT_PASSWORD}
+  Storage__ProfilePrefix: ${S3_PROFILE_PREFIX:-profile-assets}
+  Storage__ForcePathStyle: "true"
+  Storage__UploadUrlExpiryMinutes: ${S3_UPLOAD_URL_EXPIRY_MINUTES:-5}
+  Storage__ReadUrlExpiryMinutes: ${S3_READ_URL_EXPIRY_MINUTES:-30}
+  Cors__AllowedOrigin: ${APP_ORIGIN}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - private
+
+  minio:
+    image: ${MINIO_IMAGE}
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - private
+
+  minio-init:
+    image: ${MINIO_CLIENT_IMAGE}
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-ec"]
+    command: |
+      mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+      mc mb --ignore-existing "local/$$S3_BUCKET"
+      mc anonymous set none "local/$$S3_BUCKET"
+      mc cors set "local/$$S3_BUCKET" /config/cors.json
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET}
+    volumes:
+      - ./cors.staging.example.json:/config/cors.json:ro
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - private
+
+  # Run it explicitly with `docker compose --profile jobs run --rm migrate`; do not start it automatically.
+  migrate:
+    image: ${BACKEND_IMAGE}
+    profiles: ["jobs"]
+    restart: "no"
+    command: ["--apply-migrations"]
+    environment: *backend-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    networks:
+      - private
+
+  # This must be an idempotent seed operation implemented by Module 14, never an ad-hoc SQL import.
+  seed:
+    image: ${BACKEND_IMAGE}
+    profiles: ["jobs"]
+    restart: "no"
+    command: ["--seed"]
+    environment: *backend-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    networks:
+      - private
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    environment: *backend-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    # The Module 14 backend image must provide a real HEALTHCHECK against /health/live.
+    # Compose cannot add a shell-based check without assuming tooling inside the hardened image.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    networks:
+      - private
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    environment:
+      # The frontend image must be built with same-origin /api behavior; Next.js public variables are build-time.
+      NEXT_PUBLIC_API_URL: ""
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    depends_on:
+      backend:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    networks:
+      - private
+
+  caddy:
+    image: ${CADDY_IMAGE}
+    depends_on:
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${STAGING_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    read_only: true
+    tmpfs:
+      - /config
+      - /data
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    networks:
+      private:
+        aliases:
+          # The browser maps *.localhost to loopback; containers resolve this alias to Caddy.
+          - storage.localhost
+
+networks:
+  private:
+    internal: true
+
+volumes:
+  postgres-data:
+  minio-data:

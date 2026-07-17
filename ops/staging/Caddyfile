@@ -1,0 +1,31 @@
+# Local portable-staging gateway only. TLS is intentionally not configured here:
+# Docker Desktop staging binds to localhost, while a future approved cloud ingress terminates TLS.
+{
+	auto_https off
+	admin off
+}
+
+# MinIO uses a separate local media hostname so presigned URLs are reachable both by the browser
+# and by the backend container. It has no authentication cookies; MinIO's narrowly scoped CORS policy
+# is configured by minio-init. A real deployment uses the approved object-store endpoint instead.
+http://storage.localhost:8080 {
+	reverse_proxy minio:9000
+}
+
+# The application stays on one browser origin. Caddy forwards API and SignalR hub routes to the same
+# single backend process, preserving the original Host/cookies and WebSocket upgrade automatically.
+http://:8080 {
+	log {
+		output stdout
+		format json
+	}
+
+	@backend path /api/* /hubs/* /health/*
+	handle @backend {
+		reverse_proxy backend:8080
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

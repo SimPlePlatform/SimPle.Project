@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="SimPle platform engineering evidence and delivery roadmap." />
+    <title>SimPle | Engineering Evidence</title>
+    <style>
+      :root { color-scheme: dark; --ink: #edf2ff; --muted: #aebbd3; --line: #283652; --panel: #121b2d; --accent: #8bb4ff; --ok: #88d498; --pending: #f4ca7a; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; background: #09111f; color: var(--ink); }
+      main { width: min(1040px, calc(100% - 2rem)); margin: auto; padding: 4.5rem 0; }
+      h1 { max-width: 15ch; font-size: clamp(2.5rem, 7vw, 5.5rem); line-height: .95; margin: 0 0 1rem; }
+      h2 { margin: 0 0 .75rem; font-size: 1.3rem; }
+      p { color: var(--muted); max-width: 75ch; }
+      a { color: var(--accent); }
+      .eyebrow, .tag { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+      .eyebrow { color: var(--accent); }
+      .notice { border-left: 4px solid var(--pending); background: #211d16; padding: 1rem 1.25rem; margin: 2rem 0; color: #f9dfaa; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 2rem 0; }
+      .card { padding: 1.25rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); }
+      .tag { display: inline-block; border-radius: 99px; padding: .2rem .55rem; margin-bottom: .7rem; }
+      .complete { background: #173426; color: var(--ok); }
+      .pending { background: #3d3014; color: var(--pending); }
+      table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; }
+      th, td { text-align: left; padding: .8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; }
+      code { color: #d0ddff; }
+      footer { margin-top: 3.5rem; color: var(--muted); font-size: .9rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">SimPle platform · public engineering evidence</p>
+      <h1>A social gaming platform, built with an evidence trail.</h1>
+      <p>
+        SimPle is a modular ASP.NET Core, PostgreSQL, Next.js, and SignalR social-gaming platform. This page
+        links to the source records behind the work rather than making unsupported deployment or scale claims.
+      </p>
+
+      <aside class="notice">
+        <strong>Current boundary:</strong> this is not a deployment status page. The portfolio is a
+        single-instance demo evidence hub; cloud deployment, hosted CI, portable staging, and release status
+        are each recorded separately when they are actually verified.
+      </aside>
+
+      <section aria-labelledby="status">
+        <h2 id="status">Phase 1 status</h2>
+        <div class="grid">
+          <article class="card"><span class="tag complete">Local evidence</span><h2>Modules 1–4</h2><p>Authentication, profile identity, friends, and game discovery have module-level implementation, testing, and security records.</p></article>
+          <article class="card"><span class="tag pending">Review pending</span><h2>Modules 5–6</h2><p>Local work is recorded; final production review and release evidence remain separate outstanding work.</p></article>
+          <article class="card"><span class="tag pending">Planned / in progress</span><h2>Modules 7–14</h2><p>Realtime through delivery readiness are not represented as completed simply because their design documents exist.</p></article>
+        </div>
+      </section>
+
+      <section aria-labelledby="architecture">
+        <h2 id="architecture">Delivery shape</h2>
+        <p><code>Browser → Caddy gateway → Next.js frontend + ASP.NET Core API/SignalR → PostgreSQL / S3-compatible media</code></p>
+        <p>The planned portable-staging topology uses one backend instance. Redis/Azure SignalR backplanes, distributed presence, and multi-instance operation are intentionally deferred.</p>
+      </section>
+
+      <section aria-labelledby="evidence">
+        <h2 id="evidence">How to read the evidence</h2>
+        <table>
+          <thead><tr><th>Level</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>LocalComplete</td><td>Exact candidate local checks were recorded.</td></tr>
+            <tr><td>CiVerified</td><td>Exact committed tuple passed hosted CI.</td></tr>
+            <tr><td>PortableStagingVerified</td><td>Exact tuple passed the documented disposable Compose checks.</td></tr>
+            <tr><td>DeploymentVerified</td><td>A human-approved cloud environment was checked against that tuple.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section aria-labelledby="source">
+        <h2 id="source">Inspect the source records</h2>
+        <div class="grid">
+          <article class="card"><h2>Project evidence</h2><p><a href="https://github.com/SimPlePlatform/SimPle.Project/tree/main/docs">Module docs and security audits</a></p></article>
+          <article class="card"><h2>Backend</h2><p><a href="https://github.com/SimPlePlatform/SimPLe.Backend">ASP.NET Core API, migrations, and tests</a></p></article>
+          <article class="card"><h2>Frontend</h2><p><a href="https://github.com/SimPlePlatform/SimpLe.Frontend">Next.js UI and browser tests</a></p></article>
+          <article class="card"><h2>Delivery runbooks</h2><p><a href="https://github.com/SimPlePlatform/SimPle.Project/tree/main/docs/devops">Staging, release evidence, and GitHub hardening guides</a></p></article>
+        </div>
+      </section>
+
+      <footer>Source-controlled evidence is canonical. No secrets, customer data, paid service, or credit card is required to view this page.</footer>
+    </main>
+  </body>
+</html>

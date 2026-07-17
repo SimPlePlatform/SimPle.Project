@@ -7,3 +7,7 @@ Thumbs.db
 *.bak
 *.swp
 docs/handoffs/
+
+# Local staging configuration. Copy ops/staging/.env.example to ops/staging/.env
+# and keep the resulting values on the operator machine only.
+ops/staging/.env
