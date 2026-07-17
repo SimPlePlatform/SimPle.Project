@@ -357,4 +357,4 @@ capability-validation logic, then `LobbyRepository.cs` for the partial-unique-in
 | `run-module-e2e.mjs` Windows `spawnSync` invocation bug | Unowned, pre-existing | Worked around by invoking `npm run test:e2e -- <spec>` directly at verification |
 | Sidebar's hardcoded placeholder "SP-7F-29" active-lobby link | Real pre-existing product defect, unowned by this module's scope | Found during verification; recorded, not fixed in this pass |
 | Remaining `.page-title` div→`<h1>` accessibility sweep | Follow-up, unowned | Two of the remaining pages were fixed this module (`SearchResultsPage.tsx`, `DashboardPage.tsx`); others from Module 4's incomplete sweep remain |
-| Production review and final evidence sign-off | `/simple production-review module=6` | This docs stage is in progress; production-review and final evidence remain |
+| Local completion evidence | Existing module checkpoints | Complete locally; hosted CI, portable staging, and deployment evidence are Module 14 responsibilities |
