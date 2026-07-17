@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+# This is the status check required by the Project repository's protect-main
+# ruleset. Deployment remains manual and separately environment-gated.
+permissions:
+  contents: read
+
+jobs:
+  delivery-config:
+    name: Validate delivery configuration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate portable Compose configuration
+        run: docker compose --env-file ops/staging/.env.example -f ops/staging/compose.yaml config --quiet
+
+      - name: Validate staging Caddy routes
+        run: |
+          docker run --rm \
+            -v "$PWD/ops/staging/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2.10.2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+      - name: Validate Azure gateway Caddy routes
+        run: |
+          docker run --rm \
+            -v "$PWD/ops/gateway/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2.10.2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+      - name: Compile Azure Bicep
+        run: |
+          docker run --rm \
+            --mount "type=bind,source=$PWD/infra/azure,target=/work,readonly" \
+            mcr.microsoft.com/azure-cli:2.79.0 \
+            az bicep build --file /work/main.bicep --outfile /tmp/main.json

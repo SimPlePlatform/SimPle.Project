@@ -66,6 +66,16 @@ authenticated pages in the shared `AppShell` layout. Feature components live in
 `src/features/`, UI primitives in `src/components/ui/`, and current planned
 product data lives in `src/mock/`.
 
+## Engineering Evidence & Delivery
+
+The [DevOps evidence hub](docs/devops/README.md) records current verification levels, portable-staging
+guidance, release-evidence rules, and the manual GitHub hardening checklist. It uses explicit local/CI/
+staging/deployment levels so documentation never turns a local check into a cloud-deployment claim.
+
+The zero-dependency [portfolio evidence page](portfolio/index.html) can be published through GitHub Pages
+after the repository owner enables it manually. It is a public navigation page, not an application deployment
+or availability monitor.
+
 ---
 
 ## Current Status

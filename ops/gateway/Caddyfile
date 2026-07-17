@@ -1,0 +1,23 @@
+{
+	auto_https off
+	admin off
+}
+
+# Azure Container Apps puts the three containers in one revision. Caddy is the
+# only public listener; browser API and SignalR requests keep the same origin
+# and are forwarded to the single local backend process.
+:8080 {
+	log {
+		output stdout
+		format json
+	}
+
+	@backend path /api/* /hubs/* /health/*
+	handle @backend {
+		reverse_proxy 127.0.0.1:8081
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+}
